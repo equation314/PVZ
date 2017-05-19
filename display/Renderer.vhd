@@ -26,21 +26,40 @@ begin
 	res_b <= b;
 
 	process(x, y, q_p, q_bg)
-		variable alpha: integer;
+		variable alpha: integer range 0 to 7;
+		variable x1, x2, y1, y2: integer range 0 to 1023;
+		variable tmp_r, tmp_g, tmp_b: integer range 0 to 7;
+		variable bg_r, bg_g, bg_b: integer range 0 to 7;
 	begin
+		address_bg <= conv_std_logic_vector(conv_integer(x + 200) / 4 * 120 + conv_integer(y) / 4, 16);
+		bg_r := conv_integer(q_bg(8 downto 6));
+		bg_g := conv_integer(q_bg(5 downto 3));
+		bg_b := conv_integer(q_bg(2 downto 0));
+		tmp_r := bg_r;
+		tmp_g := bg_g;
+		tmp_b := bg_b;
+
 		if (x < 640 and y < 480) then
-			address_bg <= conv_std_logic_vector(conv_integer(x + 200) / 4 * 120 + conv_integer(y) / 4, 16);
-			if (x < 16 * 4 and 16 * 4 <= y and y < 32 * 4) then
-				address_p <= conv_std_logic_vector(conv_integer(x) / 4 * 16 + conv_integer(y - 16 * 4) / 4, 8);
-				alpha := conv_integer(q_p(2 downto 0));
-				r <= conv_std_logic_vector(((7 - alpha) * conv_integer(q_bg(8 downto 6)) + alpha * conv_integer(q_p(11 downto 9))) / 7, 3);
-				g <= conv_std_logic_vector(((7 - alpha) * conv_integer(q_bg(5 downto 3)) + alpha * conv_integer(q_p(8 downto 6))) / 7, 3);
-				b <= conv_std_logic_vector(((7 - alpha) * conv_integer(q_bg(2 downto 0)) + alpha * conv_integer(q_p(5 downto 3))) / 7, 3);
-			else
-				r <= q_bg(8 downto 6);
-				g <= q_bg(5 downto 3);
-				b <= q_bg(2 downto 0);
-			end if;
+			for i in 0 to 8 loop
+				for j in 0 to 4 loop
+					x1 := i * 16 * 4;
+					y1 := j * 20 * 4 + 18 * 4;
+					x2 := x1 + 16 * 4;
+					y2 := y1 + 16 * 4;
+
+					if (x1 <= x and x < x2 and y1 <= y and y < y2) then
+						address_p <= conv_std_logic_vector(conv_integer(x - x1) / 4 * 16 + conv_integer(y - y1) / 4, 8);
+						alpha := conv_integer(q_p(2 downto 0));
+						tmp_r := ((7 - alpha) * bg_r + alpha * conv_integer(q_p(11 downto 9))) / 7;
+						tmp_g := ((7 - alpha) * bg_g + alpha * conv_integer(q_p(8 downto 6))) / 7;
+						tmp_b := ((7 - alpha) * bg_b + alpha * conv_integer(q_p(5 downto 3))) / 7;
+					end if;
+				end loop;
+			end loop;
+
+			r <= conv_std_logic_vector(tmp_r, 3);
+			g <= conv_std_logic_vector(tmp_g, 3);
+			b <= conv_std_logic_vector(tmp_b, 3);
 		else
 			r <= "000";
 			g <= "000";
