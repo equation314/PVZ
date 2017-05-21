@@ -9,11 +9,6 @@ package pvz_objects is
     , zombie_norm, pea_norm, sun_norm); -- 物体小类：植物（豌豆射手，向日葵，坚果） 僵尸（普通）
     -- 豌豆（普通）阳光（普通）
 
-  -- 使用二进制顺序编码两个枚举类型
-  attribute enum_encoding: string;
-  attribute enum_encoding of obj_types : type is "sequential";
-  attribute enum_encoding of sub_obj_types : type is "sequential";
-
   type object is record
     obj_type: obj_types; -- 物体大类
     sub_type: sub_obj_types; -- 物体小类
@@ -37,16 +32,25 @@ end package pvz_objects;
 
 package body pvz_objects is
   function obj_to_bitvec(obj: object) return std_logic_vector is
-    variable obj_type_vec : std_logic_vector(1 downto 0) := obj.obj_type'enum_encoding;
-    variable vec : std_logic_vector(25 downto 0) := (others => '0');
+    variable obj_type_vec : std_logic_vector(1 downto 0);
+    variable obj_subtype_vec : std_logic_vector(3 downto 0);
+    variable pos_x_vec: std_logic_vector(9 downto 0);
+    variable pos_y_vec: std_logic_vector(2 downto 0);
+    variable hp_vec: std_logic_vector(6 downto 0);
+    variable vec: std_logic_vector(25 downto 0);
   begin
+    obj_type_vec := std_logic_vector(to_unsigned(obj_types'pos(obj.obj_type), obj_type_vec'length)); 
+    obj_subtype_vec := std_logic_vector(to_unsigned(sub_obj_types'pos(obj.sub_type), obj_subtype_vec'length)); 
+    pos_x_vec := std_logic_vector(to_unsigned(obj.pos_x, pos_x_vec'length));
+    pos_y_vec := std_logic_vector(to_unsigned(obj.pos_y, pos_y_vec'length));
+    hp_vec := std_logic_vector(to_unsigned(obj.hp, hp_vec'length));
+    vec := obj_type_vec & obj_subtype_vec & pos_x_vec & pos_y_vec & hp_vec;
     return vec;
   end obj_to_bitvec;
 
   function obj_node_to_bitvec(node: object_node) return std_logic_vector is
-      variable vec : std_logic_vector(31 downto 0) := (others => '0');
   begin
-    return vec;
+    return obj_to_bitvec(node.obj) & node.next_addr;
   end obj_node_to_bitvec;
 end package body pvz_objects;
 
