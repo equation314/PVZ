@@ -30,9 +30,24 @@ package pvz_objects is
 
   type obj_storage_funcion is (OSF_read, OSF_write); -- 读，写
 
+  function obj_to_bitvec(obj: object) return std_logic_vector;
+  function obj_node_to_bitvec(node: object_node) return std_logic_vector;
+
 end package pvz_objects;
 
 package body pvz_objects is
+  function obj_to_bitvec(obj: object) return std_logic_vector is
+    variable obj_type_vec : std_logic_vector(1 downto 0) := obj.obj_type'enum_encoding;
+    variable vec : std_logic_vector(25 downto 0) := (others => '0');
+  begin
+    return vec;
+  end obj_to_bitvec;
+
+  function obj_node_to_bitvec(node: object_node) return std_logic_vector is
+      variable vec : std_logic_vector(31 downto 0) := (others => '0');
+  begin
+    return vec;
+  end obj_node_to_bitvec;
 end package body pvz_objects;
 
 -- 备忘：
