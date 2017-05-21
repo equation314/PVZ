@@ -47,14 +47,14 @@ end bhv;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 library objects;
 use objects.pvz_objects.all;
 entity node_encoder is
   port(
     -- node: in object_node;
     enable: in std_logic;
-    bits: out std_logic_vector(31 downto 0)
+    bits: out std_logic_vector(31 downto 0);
+    bits_decode_encode: out std_logic_vector(31 downto 0)
   );
 end node_encoder;
 architecture bhv of node_encoder is
@@ -62,6 +62,9 @@ begin
   process(enable)
     variable obj : object;
     variable node : object_node;
+    variable vec: std_logic_vector(31 downto 0);
+    variable decode_node: object_node;
+    variable b: std_logic;
   begin
     obj.obj_type := pea;
     obj.sub_type := plant_shooter;
@@ -70,8 +73,10 @@ begin
     obj.hp := 33;
     node.obj := obj;
     node.next_addr := "101010";
-    -- bits <= obj.obj_type'enum_encoding & obj.obj_subtype'enum_encoding & std_logic_vector(to_unsigned(obj.pos_x, pos_x_vec'length)) & std_logic_vector(to_unsigned(obj.pos_y, pos_y_vec'length)) & std_logic_vector(to_unsigned(obj.hp, hp_vec'length)) & "101010";
-    bits <= obj_node_to_bitvec(node);
+    vec := obj_node_to_bitvec(node);
+    bits <= vec;
+    decode_node := bitvec_to_node(vec);
+    bits_decode_encode <= obj_node_to_bitvec(decode_node);
   end process;
 end bhv;
 -- 备忘
