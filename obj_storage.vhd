@@ -70,7 +70,8 @@ begin
     obj.sub_type := plant_shooter;
     obj.pos_x := 50;
     obj.pos_y := 3;
-    obj.hp := 33;
+    obj.hp := 15;
+    obj.state := 0;
     node.obj := obj;
     node.next_addr := "101010";
     vec := obj_node_to_bitvec(node);
