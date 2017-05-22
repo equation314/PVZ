@@ -7,10 +7,11 @@ use objects.pvz_objects.all;
 
 entity obj_storage is -- 读写物体信息
   port(
+    -- 对外 IO
     enable: in std_logic; -- 使能，信号为0的时候不工作
     func: in obj_storage_funcion; -- 工作模式 读，写
     addr: in std_logic_vector(5 downto 0); -- 内存地址
-    obj_node: inout object_node;
+    obj: inout object;
     --- memory 	to CFPGA
     BASERAMWE           : out std_logic;   --write
     BASERAMOE           : out std_logic;    --read
@@ -38,13 +39,13 @@ begin
           BASERAMOE<='1';
           BASERAMWE<='0';
           BASERAMADDR <= ADDR_PREFIX & addr;
-          BASERAMDATA <= obj_node_to_bitvec(obj_node);
+          BASERAMDATA <= obj_to_bitvec(obj);
       end case;
     end if;
   end process;
 end bhv;
 
-
+-- 编码、解码测试模块
 library ieee;
 use ieee.std_logic_1164.all;
 library objects;
@@ -61,9 +62,8 @@ architecture bhv of node_encoder is
 begin
   process(enable)
     variable obj : object;
-    variable node : object_node;
+    variable decode_node : object;
     variable vec: std_logic_vector(31 downto 0);
-    variable decode_node: object_node;
     variable b: std_logic;
   begin
     obj.obj_type := pea;
@@ -72,13 +72,11 @@ begin
     obj.pos_y := 3;
     obj.hp := 15;
     obj.state := 0;
-    node.obj := obj;
-    node.next_addr := "101010";
-    vec := obj_node_to_bitvec(node);
+    vec := obj_to_bitvec(obj);
     bits <= vec;
-    decode_node := bitvec_to_node(vec);
-    bits_decode_encode <= obj_node_to_bitvec(decode_node);
+    decode_node := bitvec_to_obj(vec);
+    bits_decode_encode <= obj_to_bitvec(decode_node);
   end process;
 end bhv;
 -- 备忘
--- 链表 存储起始位置和结束位置等信息
+-- 存储器锁，如何实现？
