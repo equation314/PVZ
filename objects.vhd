@@ -16,6 +16,7 @@ package pvz_objects is
     pos_y: integer range 0 to 4; -- y坐标 共5行
     hp: integer range 0 to 31; -- 体力
     state: integer range 0 to 31; -- 可用来控制节奏（实现动画、定间隔发射豌豆等）
+    invalid: std_logic; -- 是否合法，用于判断结束
   end record;
 
   type obj_storage_funcion is (OSF_read, OSF_write); -- 读，写
@@ -79,6 +80,7 @@ package body pvz_objects is
     obj.pos_y := to_integer(unsigned(vec(18 downto 16)));
     obj.hp := to_integer(unsigned(vec(15 downto 11)));
     obj.state := to_integer(unsigned(vec(10 downto 6)));
+    obj.invalid := vec(5);
     return obj;
   end bitvec_to_obj;
 
@@ -94,4 +96,7 @@ end package body pvz_objects;
 --   pos_y: 3位
 --   hp: 5位
 --   state: 5位
---   后6位为0
+--   invalid: 是否非法
+--   后5位为0
+
+-- 末尾元素，invalid = 1
