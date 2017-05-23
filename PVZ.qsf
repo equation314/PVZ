@@ -71,15 +71,15 @@ set_location_assignment PIN_R5 -to green[0]
 set_location_assignment PIN_U1 -to blue[2]
 set_location_assignment PIN_U2 -to blue[1]
 set_location_assignment PIN_T4 -to blue[0]
-set_global_assignment -name VHDL_FILE display/Plants.vhd
-set_global_assignment -name VHDL_FILE display/Background.vhd
-set_global_assignment -name QIP_FILE display/Background.qip
-set_global_assignment -name QIP_FILE display/Plants.qip
-set_global_assignment -name VHDL_FILE display/VGA_640x480.vhd
-set_global_assignment -name VHDL_FILE display/Renderer.vhd
-set_global_assignment -name VHDL_FILE PVZ.vhd
 
 set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name VHDL_FILE PVZ.vhd
+set_global_assignment -name VHDL_FILE display/VGA_640x480.vhd
+set_global_assignment -name VHDL_FILE display/Renderer.vhd
+set_global_assignment -name QIP_FILE rom/Background.qip
+set_global_assignment -name VHDL_FILE rom/Background.vhd
+set_global_assignment -name QIP_FILE rom/Objects.qip
+set_global_assignment -name VHDL_FILE rom/Objects.vhd
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -30,9 +30,9 @@ architecture bhv of PVZ is
 			q : out std_logic_vector (8 downto 0)
 		);
 	end component;
-	component Plants is
+	component Objects is
 		port (
-			address: in std_logic_vector (14 downto 0);
+			address: in std_logic_vector (15 downto 0);
 			clock: in std_logic;
 			q: out std_logic_vector (11 downto 0)
 		);
@@ -41,9 +41,9 @@ architecture bhv of PVZ is
 		port(
 			clock: in std_logic;
 			address_bg: out std_logic_vector(15 downto 0);
-			address_p: out std_logic_vector(14 downto 0);
+			address_obj: out std_logic_vector(15 downto 0);
 			q_bg: in std_logic_vector(8 downto 0);
-			q_p: in std_logic_vector(11 downto 0);
+			q_obj: in std_logic_vector(11 downto 0);
 			req_x, req_y: in std_logic_vector(9 downto 0);
 			res_r, res_g, res_b: out std_logic_vector(2 downto 0)
 		);
@@ -51,9 +51,9 @@ architecture bhv of PVZ is
 
 	signal clk50: std_logic;
 	signal address_bg: std_logic_vector(15 downto 0);
-	signal address_p: std_logic_vector(14 downto 0);
+	signal address_obj: std_logic_vector(15 downto 0);
 	signal q_bg: std_logic_vector(8 downto 0);
-	signal q_p: std_logic_vector(11 downto 0);
+	signal q_obj: std_logic_vector(11 downto 0);
 	signal req_x, req_y: std_logic_vector(9 downto 0);
 	signal res_r, res_g, res_b: std_logic_vector(2 downto 0);
 begin
@@ -71,17 +71,17 @@ begin
 		clock => clk50,
 		q => q_bg
 	);
-	p: Plants port map (
-		address => address_p,
+	obj: Objects port map (
+		address => address_obj,
 		clock => clk50,
-		q => q_p
+		q => q_obj
 	);
 	ren: Renderer port map (
-		clock => clk_0,
+		clock => clk50,
 		address_bg => address_bg,
-		address_p => address_p,
+		address_obj => address_obj,
 		q_bg => q_bg,
-		q_p => q_p,
+		q_obj => q_obj,
 		req_x => req_x, req_y => req_y,
 		res_r => res_r, res_g => res_g, res_b => res_b
 	);

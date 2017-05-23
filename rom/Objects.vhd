@@ -4,7 +4,7 @@
 -- MODULE: altsyncram
 
 -- ============================================================
--- File Name: Plants.vhd
+-- File Name: Objects.vhd
 -- Megafunction Name(s):
 -- 			altsyncram
 --
@@ -39,17 +39,17 @@ USE ieee.std_logic_1164.all;
 LIBRARY altera_mf;
 USE altera_mf.all;
 
-ENTITY Plants IS
+ENTITY Objects IS
 	PORT
 	(
-		address		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
+		address		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
 		q		: OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
 	);
-END Plants;
+END Objects;
 
 
-ARCHITECTURE SYN OF plants IS
+ARCHITECTURE SYN OF objects IS
 
 	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (11 DOWNTO 0);
 
@@ -72,7 +72,7 @@ ARCHITECTURE SYN OF plants IS
 		width_byteena_a		: NATURAL
 	);
 	PORT (
-			address_a	: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
+			address_a	: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 			clock0	: IN STD_LOGIC ;
 			q_a	: OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
 	);
@@ -85,15 +85,15 @@ BEGIN
 	GENERIC MAP (
 		clock_enable_input_a => "BYPASS",
 		clock_enable_output_a => "BYPASS",
-		init_file => "../rom/plants.mif",
+		init_file => "objects.mif",
 		intended_device_family => "Cyclone II",
 		lpm_hint => "ENABLE_RUNTIME_MOD=NO",
 		lpm_type => "altsyncram",
-		numwords_a => 24576,
+		numwords_a => 57344,
 		operation_mode => "ROM",
 		outdata_aclr_a => "NONE",
 		outdata_reg_a => "CLOCK0",
-		widthad_a => 15,
+		widthad_a => 16,
 		width_a => 12,
 		width_byteena_a => 1
 	)
@@ -127,40 +127,40 @@ END SYN;
 -- Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 -- Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
 -- Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
--- Retrieval info: PRIVATE: MIFfilename STRING "../rom/plants.mif"
--- Retrieval info: PRIVATE: NUMWORDS_A NUMERIC "24576"
+-- Retrieval info: PRIVATE: MIFfilename STRING "objects.mif"
+-- Retrieval info: PRIVATE: NUMWORDS_A NUMERIC "57344"
 -- Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "0"
 -- Retrieval info: PRIVATE: RegAddr NUMERIC "1"
 -- Retrieval info: PRIVATE: RegOutput NUMERIC "1"
 -- Retrieval info: PRIVATE: SYNTH_WRAPPER_GEN_POSTFIX STRING "0"
 -- Retrieval info: PRIVATE: SingleClock NUMERIC "1"
 -- Retrieval info: PRIVATE: UseDQRAM NUMERIC "0"
--- Retrieval info: PRIVATE: WidthAddr NUMERIC "15"
+-- Retrieval info: PRIVATE: WidthAddr NUMERIC "16"
 -- Retrieval info: PRIVATE: WidthData NUMERIC "12"
 -- Retrieval info: PRIVATE: rden NUMERIC "0"
 -- Retrieval info: LIBRARY: altera_mf altera_mf.altera_mf_components.all
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_INPUT_A STRING "BYPASS"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
--- Retrieval info: CONSTANT: INIT_FILE STRING "../rom/plants.mif"
+-- Retrieval info: CONSTANT: INIT_FILE STRING "objects.mif"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone II"
 -- Retrieval info: CONSTANT: LPM_HINT STRING "ENABLE_RUNTIME_MOD=NO"
 -- Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
--- Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "24576"
+-- Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "57344"
 -- Retrieval info: CONSTANT: OPERATION_MODE STRING "ROM"
 -- Retrieval info: CONSTANT: OUTDATA_ACLR_A STRING "NONE"
 -- Retrieval info: CONSTANT: OUTDATA_REG_A STRING "CLOCK0"
--- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "15"
+-- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "16"
 -- Retrieval info: CONSTANT: WIDTH_A NUMERIC "12"
 -- Retrieval info: CONSTANT: WIDTH_BYTEENA_A NUMERIC "1"
--- Retrieval info: USED_PORT: address 0 0 15 0 INPUT NODEFVAL "address[14..0]"
+-- Retrieval info: USED_PORT: address 0 0 16 0 INPUT NODEFVAL "address[15..0]"
 -- Retrieval info: USED_PORT: clock 0 0 0 0 INPUT VCC "clock"
 -- Retrieval info: USED_PORT: q 0 0 12 0 OUTPUT NODEFVAL "q[11..0]"
--- Retrieval info: CONNECT: @address_a 0 0 15 0 address 0 0 15 0
+-- Retrieval info: CONNECT: @address_a 0 0 16 0 address 0 0 16 0
 -- Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: q 0 0 12 0 @q_a 0 0 12 0
--- Retrieval info: GEN_FILE: TYPE_NORMAL Plants.vhd TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL Plants.inc FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL Plants.cmp FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL Plants.bsf FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL Plants_inst.vhd FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Objects.vhd TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Objects.inc FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Objects.cmp FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Objects.bsf FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Objects_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: altera_mf
