@@ -55,6 +55,7 @@ package body pvz_objects is
       when "01" => return zombie;
       when "10" => return pea;
       when "11" => return sun;
+      when others => return plant;
     end case;
   end decode_obj_type;
 
