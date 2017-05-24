@@ -7,8 +7,11 @@ use objects.pvz_objects.all;
 
 entity new_engine is
   port(
+    clear: in std_logic;
     enable: in std_logic;
-    clk, game_clk: in std_logic
+    clk, game_clk: in std_logic;
+    state_out: out std_logic_vector(6 downto 0);
+    mem_out: out std_logic_vector(26 downto 0)
   );
 end new_engine;
 architecture bhv of new_engine is
@@ -24,12 +27,12 @@ architecture bhv of new_engine is
   end component;
 
   type EngineState is (s_init, s_outer, s_read, s_inner, s_idle, s_write_inner
-    , s_write_outer, s_append, s_append_done);
+    , s_write_outer, s_append, s_append_done, s_clear);
   signal state : EngineState;
   signal next_state : EngineState;
   signal i : integer range 0 to 255 := 0;
   signal j : integer range 0 to 255 := 0;
-  signal addr: std_logic_vector(7 downto 0) := "00000000";
+  signal addr: std_logic_vector(7 downto 0);
   signal data: std_logic_vector(26 downto 0);
   signal wren: std_logic := '0';
   signal q: std_logic_vector(26 downto 0);
@@ -37,11 +40,21 @@ architecture bhv of new_engine is
 begin
   c0 : internal_ram port map(addr, clk, data, wren, q);
 
+  debug_out: process(q, state)
+  begin
+    mem_out <= q;
+    state_out <= std_logic_vector(to_unsigned(EngineState'pos(state), state_out'length));
+  end process;
+
   automata: process(clk, game_clk)
   begin
     if enable='1' then
       if rising_edge(clk) then
-        state <= next_state;
+        if clear='1' then
+          state <= s_clear;
+        else
+          state <= next_state;
+        end if;
       end if;
     else
       state <= s_idle;
@@ -53,6 +66,12 @@ begin
     variable outer_updated : std_logic := '0';
   begin
     case state is
+      when s_clear=>
+        addr <= "00000000";
+        tmp_object.invalid := '1';
+        data <= obj_to_bitvec(tmp_object);
+        wren <= '1';
+        next_state <= s_init;
       when s_init =>
         i <= 0;
         j <= 0;
@@ -70,7 +89,6 @@ begin
       when s_read =>
         outer_object := bitvec_to_obj(q);
         if outer_object.invalid = '1' then
-          i <= i+1;
           next_state <= s_idle;
         elsif outer_object.hp = 0 then
           i <= i+1;
@@ -165,7 +183,7 @@ begin
         next_state <= s_write_outer;
         i <= i+1;
       when s_inner =>
-        inner_object <= bitvec_to_obj(q);
+        inner_object := bitvec_to_obj(q);
         if inner_object.invalid='1' then
           next_state <= s_outer;
         elsif inner_object.hp = 0 then
@@ -176,7 +194,7 @@ begin
           case outer_object.sub_type is
             when pea_norm =>
             when zombie_norm =>
-            others =>
+            when others =>
           end case;
           j <= j+1;
           addr <= std_logic_vector(unsigned(addr) + j);
