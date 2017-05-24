@@ -36,7 +36,7 @@ package body pvz_objects is
     variable pos_y_vec: std_logic_vector(2 downto 0);
     variable hp_vec: std_logic_vector(4 downto 0);
     variable state_vec: std_logic_vector(4 downto 0);
-    variable vec: std_logic_vector(31 downto 0);
+    variable vec: std_logic_vector(26 downto 0);
   begin
     obj_type_vec := std_logic_vector(to_unsigned(obj_types'pos(obj.obj_type), obj_type_vec'length));
     obj_subtype_vec := std_logic_vector(to_unsigned(sub_obj_types'pos(obj.sub_type), obj_subtype_vec'length));
@@ -44,7 +44,7 @@ package body pvz_objects is
     pos_y_vec := std_logic_vector(to_unsigned(obj.pos_y, pos_y_vec'length));
     hp_vec := std_logic_vector(to_unsigned(obj.hp, hp_vec'length));
     state_vec := std_logic_vector(to_unsigned(obj.state, state_vec'length));
-    vec := obj_type_vec & obj_subtype_vec & pos_x_vec & pos_y_vec & hp_vec & state_vec & "000000";
+    vec := obj_type_vec & obj_subtype_vec & pos_x_vec & pos_y_vec & hp_vec & state_vec & obj.invalid;
     return vec;
   end obj_to_bitvec;
 
@@ -74,13 +74,13 @@ package body pvz_objects is
   function bitvec_to_obj(vec: std_logic_vector) return object is
     variable obj: object;
   begin
-    obj.obj_type := decode_obj_type(vec(31 downto 30));
-    obj.sub_type := decode_sub_type(vec(29 downto 26));
-    obj.pos_x := to_integer(unsigned(vec(25 downto 19)));
-    obj.pos_y := to_integer(unsigned(vec(18 downto 16)));
-    obj.hp := to_integer(unsigned(vec(15 downto 11)));
-    obj.state := to_integer(unsigned(vec(10 downto 6)));
-    obj.invalid := vec(5);
+    obj.obj_type := decode_obj_type(vec(26 downto 25));
+    obj.sub_type := decode_sub_type(vec(24 downto 21));
+    obj.pos_x := to_integer(unsigned(vec(20 downto 14)));
+    obj.pos_y := to_integer(unsigned(vec(13 downto 11)));
+    obj.hp := to_integer(unsigned(vec(10 downto 6)));
+    obj.state := to_integer(unsigned(vec(5 downto 1)));
+    obj.invalid := vec(0);
     return obj;
   end bitvec_to_obj;
 
@@ -89,7 +89,7 @@ end package body pvz_objects;
 -- 备忘：
 -- SRAM: 地址20位，数据32位
 
--- object 的二进制表示 共26位
+-- object 的二进制表示 共27位
 --   obj_type: 2位
 --   sub_type: 4位 目前不到8种，前面补0
 --   pos_x: 7位
@@ -97,6 +97,5 @@ end package body pvz_objects;
 --   hp: 5位
 --   state: 5位
 --   invalid: 是否非法
---   后5位为0
 
 -- 末尾元素，invalid = 1
