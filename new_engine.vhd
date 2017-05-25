@@ -26,8 +26,8 @@ architecture bhv of new_engine is
   	);
   end component;
 
-  type EngineState is (s_init, s_outer, s_read, s_inner, s_idle, s_write_inner
-    , s_write_outer, s_append, s_append_done, s_clear);
+  type EngineState is (s_init, s_outer, s_inner, s_idle
+    , s_write_outer, s_write_inner, s_append, s_append_done, s_append_append , s_clear);
   signal state : EngineState;
   signal next_state : EngineState;
   signal i : integer range 0 to 255 := 0;
@@ -63,7 +63,9 @@ begin
 
   com: process(state, data)
     variable outer_object, inner_object, append_object, tmp_object : object;
-    variable outer_updated : std_logic := '0';
+    variable resumed_outer : std_logic := '0';
+    variable stop_inner : std_logic := '0';
+
   begin
     case state is
       when s_clear=>
@@ -76,29 +78,20 @@ begin
         i <= 0;
         j <= 0;
         wren <= '0';
+        addr <= std_logic_vector(unsigned(addr) + i);
         next_state <= s_outer;
       when s_outer =>
-        if i < MAX_N then
-          addr <= std_logic_vector(unsigned(addr) + i);
-          wren <= '0';
-          next_state <= s_read;
-        else
-          wren <= '0';
-          next_state <= s_idle;
-        end if;
-      when s_read =>
         outer_object := bitvec_to_obj(q);
-        if outer_object.invalid = '1' then
+        if outer_object.invalid = '1' then -- tail
           next_state <= s_idle;
         elsif outer_object.hp = 0 then
-          i <= i+1;
-          next_state <= s_outer;
-        else
+          -- skip
+        elsif resumed_outer = '0' then
           if outer_object.state = 31 then
             outer_object.state := 0;
           else
             outer_object.state := outer_object.state + 1;
-          end if;
+          end if; -- update object state
           case outer_object.obj_type is
             when plant =>
               case outer_object.sub_type is
@@ -113,28 +106,31 @@ begin
                     j <= 0;
                     addr <= std_logic_vector(unsigned(addr) + j);
                     wren <= '0';
-                    next_state <= s_append;
+                    next_state <= s_append; -- 从0开始遍历，寻找空位
                   end if;
                 when plant_sunflower =>
-                if outer_object.state = 16 then
-                  append_object.obj_type := sun;
-                  append_object.sub_type := sun_norm;
-                  append_object.pos_x := outer_object.pos_x;
-                  append_object.pos_y := outer_object.pos_y;
-                  append_object.invalid := '0';
+                  if outer_object.state = 16 then
+                    append_object.obj_type := sun;
+                    append_object.sub_type := sun_norm;
+                    append_object.pos_x := outer_object.pos_x;
+                    append_object.pos_y := outer_object.pos_y;
+                    append_object.invalid := '0';
 
-                  j <= 0;
-                  addr <= std_logic_vector(unsigned(addr) + j);
-                  wren <= '0';
-                  next_state <= s_append;
-                end if;
+                    j <= 0;
+                    addr <= std_logic_vector(unsigned(addr) + j);
+                    wren <= '0';
+                    next_state <= s_append; -- 从0开始遍历，寻找空位
+                  end if;
                 when plant_nut =>
                 when others =>
               end case;
             when zombie =>
               case outer_object.sub_type is
                 when zombie_norm =>
-                  --outer_object.
+                  j <= 0;
+                  addr <= std_logic_vector(unsigned(addr) + j);
+                  wren <= '0';
+                  next_state <= s_inner;
                 when others =>
               end case;
             when pea =>
@@ -150,13 +146,13 @@ begin
               outer_object.hp := outer_object.hp - 1;
             when others =>
           end case;
-          if not(next_state = s_append or next_state = s_inner or next_state=s_idle) then
-            addr <= std_logic_vector(unsigned(addr) + i);
-            wren <= '1';
-            data <= obj_to_bitvec(outer_object);
-            next_state <= s_write_outer;
-            i <= i+1;
-          end if;
+        end if;
+        if not(next_state = s_append or next_state = s_inner or next_state=s_idle) then
+          addr <= std_logic_vector(unsigned(addr) + i);
+          wren <= '1';
+          data <= obj_to_bitvec(outer_object);
+          next_state <= s_write_outer;
+          resumed_outer := '0';
         end if;
       when s_write_outer =>
         wren <= '0';
@@ -165,7 +161,12 @@ begin
         addr <= std_logic_vector(unsigned(addr) + i);
       when s_append =>
         tmp_object := bitvec_to_obj(q);
-        if tmp_object.invalid='1' or tmp_object.hp = 0 then
+        if tmp_object.invalid='1' then
+          addr <= std_logic_vector(unsigned(addr) + j);
+          wren <= '1';
+          data <= obj_to_bitvec(append_object);
+          next_state <= s_append_append;
+        elsif tmp_object.hp = 0 then
           addr <= std_logic_vector(unsigned(addr) + j);
           wren <= '1';
           data <= obj_to_bitvec(append_object);
@@ -176,15 +177,26 @@ begin
           wren <= '0';
           next_state <= s_append;
         end if;
-      when s_append_done =>
+      when s_append_append => -- set tail
         wren <= '1';
+        addr <= std_logic_vector(unsigned(addr) + j + 1);
+        tmp_object.invalid := '1';
+        data <= obj_to_bitvec(tmp_object);
+        next_state <= s_append_done;
+      when s_append_done => -- return to outer loop
+        wren <= '0';
         addr <= std_logic_vector(unsigned(addr) + i);
-        data <= obj_to_bitvec(outer_object);
-        next_state <= s_write_outer;
-        i <= i+1;
+        resumed_outer := '1';
+        next_state <= s_outer;
       when s_inner =>
         inner_object := bitvec_to_obj(q);
+        resumed_outer := '1';
+        stop_inner := '0';
+        wren <= '0';
         if inner_object.invalid='1' then
+          if outer_object.obj_type=zombie then --面前没有植物
+            outer_object.pos_x := outer_object.pos_x - 1;
+          end if;
           next_state <= s_outer;
         elsif inner_object.hp = 0 then
           j <= j+1;
@@ -193,12 +205,40 @@ begin
         else
           case outer_object.sub_type is
             when pea_norm =>
+              if inner_object.obj_type = zombie and inner_object.pos_x = outer_object.pos_x and inner_object.pos_y = outer_object.pos_y then
+                outer_object.hp := 0;
+                if inner_object.hp < 5 then -- 豌豆攻击僵尸
+                  inner_object.hp := 0;
+                else
+                  inner_object.hp := inner_object.hp - 5;
+                end if;
+                stop_inner := '1';
+              end if;
             when zombie_norm =>
+              if inner_object.obj_type = plant and inner_object.pos_x = outer_object.pos_x and inner_object.pos_y = outer_object.pos_y then -- 僵尸攻击植物
+                if outer_object.hp < 3 then
+                  outer_object.hp := 0;
+                else
+                  outer_object.hp := outer_object.hp - 3;
+                end if;
+                stop_inner := '1';
+              end if;
             when others =>
           end case;
+          addr <= std_logic_vector(unsigned(addr) + j);
+          wren <= '1';
+          next_state <= s_write_inner;
+        end if;
+      when s_write_inner =>
+        if stop_inner = '0' then
           j <= j+1;
           addr <= std_logic_vector(unsigned(addr) + j);
+          wren <= '0';
           next_state <= s_inner;
+        else
+          wren <= '0';
+          addr <= std_logic_vector(unsigned(addr) + i);
+          next_state <= s_outer;
         end if;
       when s_idle =>
         next_state <= s_idle;
