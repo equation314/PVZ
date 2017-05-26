@@ -47,7 +47,27 @@ architecture bhv of new_engine is
   signal j : integer range 0 to 255 := 0;
   signal next_i : integer range 0 to 255 := 0;
   signal next_j : integer range 0 to 255 := 0;
+
+  signal slow_clk : std_logic;
+  signal clk_cnt : std_logic;
+
+  type obj_pool is array(200 downto 0) of object;
+  signal objects : obj_pool;
 begin
+  slow_down_clk: process(clk)
+  begin
+    if rising_edge(clk) then
+      if clk_cnt='0' then
+        clk_cnt <= '1';
+        slow_clk <= '1';
+      else
+        clk_cnt <= '0';
+        slow_clk <= '0';
+      end if;
+    end if;
+  end process;
+
+
   c0 : internal_ram port map(addr, clk, data, wren, q);
 
   debug_out: process(q, state, i, j)
@@ -58,11 +78,11 @@ begin
     j_out <= std_logic_vector(to_unsigned(j, 8));
   end process;
 
-  automata: process(clk, game_clk)
+  automata: process(slow_clk, game_clk)
 
   begin
     if enable='1' then
-      if rising_edge(clk) then
+      if rising_edge(slow_clk) then
         if clear='1' then
           state <= s_clear_0;
         else
