@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
+-- VGA 接口
 entity VGA640x480 is
 	port(
 		reset: in std_logic;

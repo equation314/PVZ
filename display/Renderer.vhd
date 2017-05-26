@@ -3,6 +3,10 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
+library pvz;
+use pvz.pvz_objects.all;
+
+-- 渲染一个像素
 entity Renderer is
 	port(
 		clock: in std_logic;
@@ -11,7 +15,9 @@ entity Renderer is
 		q_bg: in std_logic_vector(8 downto 0); -- 背景资源值
 		q_obj: in std_logic_vector(11 downto 0); -- 物体资源值
 		req_x, req_y: in std_logic_vector(9 downto 0); -- 询问坐标输入
-		res_r, res_g, res_b: out std_logic_vector(2 downto 0) -- 颜色输出
+		res_r, res_g, res_b: out std_logic_vector(2 downto 0); -- 颜色输出
+		plants: plant_vector; -- 植物输入
+		zombies: zombie_vector -- 僵尸输入
 	);
 end entity;
 
@@ -20,6 +26,7 @@ architecture bhv of Renderer is
 	signal r, g, b: std_logic_vector(2 downto 0);
 	signal count: std_logic_vector(24 downto 0);
 	signal fps: std_logic_vector(2 downto 0);
+
 begin
 	x <= req_x;
 	y <= req_y;
@@ -36,15 +43,16 @@ begin
 			else
 				count <= count + 1;
 			end if;
+
 		end if;
 	end process;
 
 	process(x, y, fps)
-		variable t: std_logic_vector(1 downto 0);
 		variable alpha: integer range 0 to 7;
 		variable x1, x2, y1, y2: integer range 0 to 1023;
 		variable tmp_r, tmp_g, tmp_b: integer range 0 to 7;
 		variable bg_r, bg_g, bg_b: integer range 0 to 7;
+		variable p: plant;
 	begin
 		address_bg <= conv_std_logic_vector(conv_integer(x + 200) / 4 * 120 + conv_integer(y) / 4, 16);
 		bg_r := conv_integer(q_bg(8 downto 6));
@@ -65,23 +73,54 @@ begin
 				tmp_b := ((7 - alpha) * bg_b + alpha * conv_integer(q_obj(5 downto 3))) / 7;
 			else
 				-- 植物
-				for i in 0 to 8 loop
-					for j in 0 to 4 loop
-						x1 := i * 16 * 4;
-						y1 := j * 20 * 4 + 18 * 4;
-						x2 := x1 + 16 * 4;
-						y2 := y1 + 16 * 4;
-						t := conv_std_logic_vector((i + j) mod 3, 2);
+				for i in 0 to N-1 loop
+					for j in 0 to M-1 loop
+						p := plants(i * M + j);
+						if (p.hp > 0) then
+							x1 := j * 16 * 4;
+							y1 := i * 20 * 4 + 18 * 4;
+							x2 := x1 + 16 * 4;
+							y2 := y1 + 16 * 4;
 
-						if (x1 <= x and x < x2 and y1 <= y and y < y2) then
-							address_obj <= '1' & t & fps & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
-							alpha := conv_integer(q_obj(2 downto 0));
-							tmp_r := ((7 - alpha) * bg_r + alpha * conv_integer(q_obj(11 downto 9))) / 7;
-							tmp_g := ((7 - alpha) * bg_g + alpha * conv_integer(q_obj(8 downto 6))) / 7;
-							tmp_b := ((7 - alpha) * bg_b + alpha * conv_integer(q_obj(5 downto 3))) / 7;
+							if (x1 <= x and x < x2 and y1 <= y and y < y2) then
+								address_obj <= '1' & p.plant_type & fps & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
+								alpha := conv_integer(q_obj(2 downto 0));
+								tmp_r := ((7 - alpha) * bg_r + alpha * conv_integer(q_obj(11 downto 9))) / 7;
+								tmp_g := ((7 - alpha) * bg_g + alpha * conv_integer(q_obj(8 downto 6))) / 7;
+								tmp_b := ((7 - alpha) * bg_b + alpha * conv_integer(q_obj(5 downto 3))) / 7;
+							end if;
+
+							-- 豌豆
+							if (p.pea < M) then
+								x1 := p.pea * 16 * 4;
+								y1 := i * 20 * 4 + 18 * 4;
+								x2 := x1 + 16 * 4;
+								y2 := y1 + 16 * 4;
+								if (x1 + 6 * 4 <= x and x < x2 - 6 * 4 and y1 + 6 * 4 <= y and y < y2 - 6 * 4) then
+									tmp_r := 0;
+									tmp_g := 7;
+									tmp_b := 0;
+								end if;
+							end if;
 						end if;
 					end loop;
 				end loop;
+
+				-- 僵尸
+				for i in 0 to N-1 loop
+					if (zombies(i).hp > 0) then
+						x1 := zombies(i).x * 16 * 4 + 8 * 4;
+						y1 := i * 20 * 4 + 18 * 4;
+						x2 := x1 + 8 * 4;
+						y2 := y1 + 16 * 4;
+						if (x1 <= x and x < x2 and y1 <= y and y < y2) then
+							tmp_r := 7;
+							tmp_g := 0;
+							tmp_b := 0;
+						end if;
+					end if;
+				end loop;
+
 			end if;
 
 			r <= conv_std_logic_vector(tmp_r, 3);
@@ -93,4 +132,5 @@ begin
 			b <= "000";
 		end if;
 	end process;
+
 end architecture;

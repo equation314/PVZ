@@ -3,15 +3,26 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
+library pvz;
+use pvz.pvz_objects.all;
+
+-- 顶层模块
 entity PVZ is
 	port (
-		clk_0, reset: in std_logic; --100m时钟输入
+		clk_0, reset: in std_logic; --100m 时钟输入
 		hs, vs: out std_logic;
 		red, green, blue: out std_logic_vector(2 downto 0)
 	);
 end entity;
 
 architecture bhv of PVZ is
+	component Logic is
+		port(
+			clock: in std_logic;
+			out_plants: out plant_vector;
+			out_zombies: out zombie_vector
+		);
+	end component;
 	component VGA640x480 is
 		port(
 			reset: in std_logic;
@@ -45,7 +56,9 @@ architecture bhv of PVZ is
 			q_bg: in std_logic_vector(8 downto 0);
 			q_obj: in std_logic_vector(11 downto 0);
 			req_x, req_y: in std_logic_vector(9 downto 0);
-			res_r, res_g, res_b: out std_logic_vector(2 downto 0)
+			res_r, res_g, res_b: out std_logic_vector(2 downto 0);
+			plants: plant_vector;
+			zombies: zombie_vector
 		);
 	end component;
 
@@ -56,7 +69,14 @@ architecture bhv of PVZ is
 	signal q_obj: std_logic_vector(11 downto 0);
 	signal req_x, req_y: std_logic_vector(9 downto 0);
 	signal res_r, res_g, res_b: std_logic_vector(2 downto 0);
+	signal plants: plant_vector;
+	signal zombies: zombie_vector;
 begin
+	l: Logic port map (
+		clock => clk50,
+		out_plants => plants,
+		out_zombies => zombies
+	);
 	vga: VGA640x480 port map (
 		reset => reset,
 		clk50 => clk50,
@@ -83,6 +103,8 @@ begin
 		q_bg => q_bg,
 		q_obj => q_obj,
 		req_x => req_x, req_y => req_y,
-		res_r => res_r, res_g => res_g, res_b => res_b
+		res_r => res_r, res_g => res_g, res_b => res_b,
+		plants => plants,
+		zombies => zombies
 	);
 end architecture;
