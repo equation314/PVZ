@@ -134,11 +134,13 @@ begin
           next_state <= s_idle;
         elsif outer_object.hp = 0 then
           -- skip
-        elsif resumed_outer = '0' then
+        else
+          if resumed_outer = '0' then
+          tmp_object := outer_object;
           if outer_object.state = 31 then
-            outer_object.state := 0;
+            tmp_object.state := 0;
           else
-            outer_object.state := outer_object.state + 1;
+            tmp_object.state := outer_object.state + 1;
           end if; -- update object state
           case outer_object.obj_type is
             when plant =>
@@ -183,7 +185,7 @@ begin
               end case;
             when pea =>
               if outer_object.pos_x = 127 then --出地图
-                outer_object.hp := 0;
+                tmp_object.hp := 0;
               else
                 next_j <= 0;
                 wren <= '0';
@@ -191,7 +193,7 @@ begin
                 next_state <= s_inner;
               end if;
             when sun =>
-              outer_object.hp := outer_object.hp - 1;
+              tmp_object.hp := outer_object.hp - 1;
             when others =>
           end case;
         end if;
@@ -199,10 +201,12 @@ begin
           addr <= std_logic_vector(unsigned(ADDR_INIT) + i);
           addr_out <= addr;
           wren <= '1';
-          data <= obj_to_bitvec(outer_object);
+          data <= obj_to_bitvec(tmp_object);
           next_state <= s_write_outer;
           resumed_outer := '0';
         end if;
+        end if;
+
       when s_write_outer =>
         wren <= '0';
         next_state <= s_outer;
