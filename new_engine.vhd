@@ -45,6 +45,8 @@ architecture bhv of new_engine is
 
   signal i : integer range 0 to 255 := 0;
   signal j : integer range 0 to 255 := 0;
+  signal next_i : integer range 0 to 255 := 0;
+  signal next_j : integer range 0 to 255 := 0;
 begin
   c0 : internal_ram port map(addr, clk, data, wren, q);
 
@@ -64,6 +66,8 @@ begin
         if clear='1' then
           state <= s_clear_0;
         else
+          i <= next_i;
+          j <= next_j;
           state <= next_state;
         end if;
       end if;
@@ -98,10 +102,10 @@ begin
         wren <= '1';
         next_state <= s_init;
       when s_init =>
-        i <= 0;
-        j <= 0;
+        next_i <= 0;
+        next_j <= 0;
         wren <= '0';
-        addr <= std_logic_vector(unsigned(ADDR_INIT) + i);
+        addr <= std_logic_vector(unsigned(ADDR_INIT) + 0);
         addr_out <= addr;
         next_state <= s_outer;
       when s_outer =>
@@ -127,8 +131,8 @@ begin
                     append_object.pos_y := outer_object.pos_y;
                     append_object.invalid := '0';
 
-                    j <= 0;
-                    addr <= std_logic_vector(unsigned(ADDR_INIT) + j);
+                    next_j <= 0;
+                    addr <= std_logic_vector(unsigned(ADDR_INIT) + 0);
                     wren <= '0';
                     next_state <= s_append; -- 从0开始遍历，寻找空位
                   end if;
@@ -140,8 +144,8 @@ begin
                     append_object.pos_y := outer_object.pos_y;
                     append_object.invalid := '0';
 
-                    j <= 0;
-                    addr <= std_logic_vector(unsigned(ADDR_INIT) + j);
+                    next_j <= 0;
+                    addr <= std_logic_vector(unsigned(ADDR_INIT) + 0);
                     wren <= '0';
                     next_state <= s_append; -- 从0开始遍历，寻找空位
                   end if;
@@ -151,8 +155,8 @@ begin
             when zombie =>
               case outer_object.sub_type is
                 when zombie_norm =>
-                  j <= 0;
-                  addr <= std_logic_vector(unsigned(ADDR_INIT) + j);
+                  next_j <= 0;
+                  addr <= std_logic_vector(unsigned(ADDR_INIT) + 0);
                   wren <= '0';
                   next_state <= s_inner;
                 when others =>
@@ -161,9 +165,9 @@ begin
               if outer_object.pos_x = 127 then --出地图
                 outer_object.hp := 0;
               else
-                j <= 0;
+                next_j <= 0;
                 wren <= '0';
-                addr <= std_logic_vector(unsigned(ADDR_INIT) + j);
+                addr <= std_logic_vector(unsigned(ADDR_INIT) + 0);
                 next_state <= s_inner;
               end if;
             when sun =>
@@ -182,9 +186,9 @@ begin
       when s_write_outer =>
         wren <= '0';
         next_state <= s_outer;
-        i <= i+1;
-        --addr <= std_logic_vector(unsigned(ADDR_INIT) + i);
-        --addr_out <= std_logic_vector(unsigned(ADDR_INIT) + i);
+        next_i <= i+1;
+        addr <= std_logic_vector(unsigned(ADDR_INIT) + i + 1);
+        addr_out <= std_logic_vector(unsigned(ADDR_INIT) + i + 1);
       when s_append =>
         tmp_object := bitvec_to_obj(q);
         if tmp_object.invalid='1' then
@@ -198,8 +202,8 @@ begin
           data <= obj_to_bitvec(append_object);
           next_state <= s_append_done;
         else
-          j <= j+1;
-          addr <= std_logic_vector(unsigned(ADDR_INIT) + j);
+          next_j <= j+1;
+          addr <= std_logic_vector(unsigned(ADDR_INIT) + j + 1);
           wren <= '0';
           next_state <= s_append;
         end if;
@@ -225,8 +229,8 @@ begin
           end if;
           next_state <= s_outer;
         elsif inner_object.hp = 0 then
-          j <= j+1;
-          addr <= std_logic_vector(unsigned(ADDR_INIT) + j);
+          next_j <= j+1;
+          addr <= std_logic_vector(unsigned(ADDR_INIT) + j + 1);
           next_state <= s_inner;
         else
           case outer_object.sub_type is
@@ -257,8 +261,8 @@ begin
         end if;
       when s_write_inner =>
         if stop_inner = '0' then
-          j <= j+1;
-          addr <= std_logic_vector(unsigned(ADDR_INIT) + j);
+          next_j <= j+1;
+          addr <= std_logic_vector(unsigned(ADDR_INIT) + j + 1);
           wren <= '0';
           next_state <= s_inner;
         else
