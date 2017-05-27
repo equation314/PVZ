@@ -90,6 +90,15 @@ begin
 								tmp_b := ((7 - alpha) * bg_b + alpha * conv_integer(q_obj(5 downto 3))) / 7;
 							end if;
 
+							-- 阳光
+							if (p.with_sun='1') then
+								if (x1 + 6 * 4 <= x and x < x2 - 6 * 4 and y1 + 6 * 4 <= y and y < y2 - 6 * 4) then
+									tmp_r := 7;
+									tmp_g := 7;
+									tmp_b := 0;
+								end if;
+							end if;
+
 							-- 豌豆
 							if (p.pea < M) then
 								x1 := p.pea * 16 * 4;
@@ -102,6 +111,7 @@ begin
 									tmp_b := 0;
 								end if;
 							end if;
+
 						end if;
 					end loop;
 				end loop;
