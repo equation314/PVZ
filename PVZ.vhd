@@ -20,7 +20,8 @@ architecture bhv of PVZ is
 		port(
 			clock: in std_logic;
 			out_plants: out plant_vector;
-			out_zombies: out zombie_vector
+			out_zombies: out zombie_vector;
+			out_win, out_lost : out std_logic
 		);
 	end component;
 	component VGA640x480 is
@@ -71,12 +72,17 @@ architecture bhv of PVZ is
 	signal res_r, res_g, res_b: std_logic_vector(2 downto 0);
 	signal plants: plant_vector;
 	signal zombies: zombie_vector;
+	signal win : std_logic := '0'; -- 赢
+	signal lost : std_logic := '0'; -- 输
 begin
 	l: Logic port map (
 		clock => clk50,
 		out_plants => plants,
-		out_zombies => zombies
+		out_zombies => zombies,
+		out_win => win,
+		out_lost => lost
 	);
+
 	vga: VGA640x480 port map (
 		reset => reset,
 		clk50 => clk50,

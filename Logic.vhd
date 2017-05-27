@@ -11,7 +11,8 @@ entity Logic is
 	port(
 		clock: in std_logic;
 		out_plants: out plant_vector;
-		out_zombies: out zombie_vector
+		out_zombies: out zombie_vector;
+		out_win, out_lost : out std_logic -- 输赢
 	);
 end entity;
 
@@ -92,6 +93,7 @@ begin
 	process(zombie_clk)
 		constant NUT_HARM : integer := 1;
 		constant NORM_HARM : integer := 2;
+		variable has_lost : std_logic := '0';
 	begin
 		if (zombie_clk'event and zombie_clk = '1') then
 			for i in 0 to N-1 loop
@@ -108,6 +110,13 @@ begin
 				end if;
 			end loop;
 		end if;
+
+		for i in 0 to N-1 loop
+			if (zombies(i).hp > 0 and zombies(i).x = 0 and plants(i * M + zombies(i).x).hp = 0) then
+				has_lost := '1';
+			end if;
+		end loop;
+		out_lost <= has_lost;
 	end process;
 
 end architecture;
