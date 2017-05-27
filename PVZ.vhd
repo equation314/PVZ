@@ -63,6 +63,7 @@ architecture bhv of PVZ is
 		);
 	end component;
 
+	signal game_clk: std_logic;
 	signal clk50: std_logic;
 	signal address_bg: std_logic_vector(15 downto 0);
 	signal address_obj: std_logic_vector(15 downto 0);
@@ -76,7 +77,7 @@ architecture bhv of PVZ is
 	signal lost : std_logic := '0'; -- 输
 begin
 	l: Logic port map (
-		clock => clk50,
+		clock => game_clk,
 		out_plants => plants,
 		out_zombies => zombies,
 		out_win => win,
@@ -113,4 +114,9 @@ begin
 		plants => plants,
 		zombies => zombies
 	);
+
+	gc: process(clk50, win, lost)
+	begin
+		game_clk <= clk50 and not (win or lost);
+	end process;
 end architecture;
