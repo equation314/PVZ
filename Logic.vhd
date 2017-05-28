@@ -17,7 +17,7 @@ entity Logic is
 end entity;
 
 architecture bhv of Logic is
-	signal count: std_logic_vector(24 downto 0);
+	signal count: std_logic_vector(30 downto 0);
 	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal pea_clk, zombie_clk: std_logic;
 	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("00", "1010", M, '0', "0000"), others => ("00", "0000", M, '0', "0000"));
@@ -34,7 +34,7 @@ begin
 	process(clock)
 	begin
 		if (clock'event and clock = '1') then
-			if (count = 20 * 1000000) then
+			if (count = 30 * 1000000) then
 				count <= (others => '0');
 				pea_clk <= '1';
 			else
