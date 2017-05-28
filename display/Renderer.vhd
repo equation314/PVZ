@@ -17,7 +17,8 @@ entity Renderer is
 		req_x, req_y: in std_logic_vector(9 downto 0); -- 询问坐标输入
 		res_r, res_g, res_b: out std_logic_vector(2 downto 0); -- 颜色输出
 		plants: plant_vector; -- 植物输入
-		zombies: zombie_vector -- 僵尸输入
+		zombies: zombie_vector; -- 僵尸输入
+		win, lost: std_logic -- 输赢
 	);
 end entity;
 
@@ -131,6 +132,19 @@ begin
 					end if;
 				end loop;
 
+			end if;
+
+			-- 输赢指示
+			if (10 <= x and x < 20 and 10 <= y and y < 20) then
+				if lost='1' then
+					tmp_r := 7;
+					tmp_g := 0;
+					tmp_b := 0;
+				elsif win='1' then
+					tmp_r := 0;
+					tmp_g := 0;
+					tmp_b := 7;
+				end if;
 			end if;
 
 			r <= conv_std_logic_vector(tmp_r, 3);

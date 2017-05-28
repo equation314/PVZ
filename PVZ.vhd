@@ -59,7 +59,9 @@ architecture bhv of PVZ is
 			req_x, req_y: in std_logic_vector(9 downto 0);
 			res_r, res_g, res_b: out std_logic_vector(2 downto 0);
 			plants: plant_vector;
-			zombies: zombie_vector
+			zombies: zombie_vector;
+			win: std_logic;
+			lost: std_logic
 		);
 	end component;
 
@@ -112,7 +114,9 @@ begin
 		req_x => req_x, req_y => req_y,
 		res_r => res_r, res_g => res_g, res_b => res_b,
 		plants => plants,
-		zombies => zombies
+		zombies => zombies,
+		win => win,
+		lost => lost
 	);
 
 	gc: process(clk50, win, lost)
