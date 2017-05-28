@@ -18,10 +18,10 @@ end entity;
 
 architecture bhv of Logic is
 	signal count: std_logic_vector(24 downto 0);
-	signal pea_clk_count : std_logic_vector(5 downto 0);
+	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal pea_clk, zombie_clk: std_logic;
 	signal plants: plant_vector := (("00", "1010", M, '0', "0000"), ("00", "1010", M, '0', "0000"), others => ("00", "0000", M, '0', "0000"));
-	signal zombies: zombie_vector := (("1010", 15), ("1010", M-1), others => ("0000", 0));
+	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
 	signal zombies_to_update : std_logic_vector(0 to N-1); -- 需要更新x的僵尸
@@ -52,6 +52,7 @@ begin
 	end process;
 
 	-- 处理豌豆
+	-- 僵尸的hp只能在这个process里更新
 	process(pea_clk)
 		variable p: plant;
 		variable has_win : std_logic := '0';
@@ -94,17 +95,37 @@ begin
 				end loop;
 			end loop;
 
-			-- 更新僵尸
+			-- 更新新产生僵尸的hp
+			for i in 0 to N-1 loop
+				if zombies(i).hp = 0 and zombies_to_update(i)='1' then
+					zombies(i).hp <= "1010";
+				end if;
+			end loop;
+
+		end if;
+	end process;
+
+	-- 处理僵尸
+	-- 僵尸的x只能在这里更新
+	process(zombie_clk)
+		constant NUT_HARM : integer := 1;
+		constant NORM_HARM : integer := 2;
+		variable has_lost : std_logic := '0';
+		variable has_win : std_logic := '0';
+	begin
+		if (zombie_clk'event and zombie_clk = '1') then
+			-- 新产生僵尸
+			-- 同时判断是否获胜
 			if pea_clk_count=ROUND_CLK then
 				pea_clk_count <= (others => '0');
 				if passed_round = WIN_CONDITION then
 					has_win := '1';
 				else
+					passed_round <= passed_round + 1;
 					for i in 0 to N-1 loop
 						if zombies(i).hp = 0 then
-							zombies(i).hp <= "1010";
+							zombies(i).x <= M-1;
 							zombies_to_update(i) <= '1';
-							passed_round <= passed_round + 1;
 						end if;
 					end loop;
 					has_win := '0';
@@ -115,20 +136,8 @@ begin
 			end if;
 			out_win <= has_win;
 
-		end if;
-	end process;
-
-	-- 处理僵尸
-	process(zombie_clk)
-		constant NUT_HARM : integer := 1;
-		constant NORM_HARM : integer := 2;
-		variable has_lost : std_logic := '0';
-	begin
-		if (zombie_clk'event and zombie_clk = '1') then
 			for i in 0 to N-1 loop
-				if (zombies_to_update(i) = '1') then
-					zombies(i).x <= M-1;
-				elsif (zombies(i).hp > 0) then
+				if (zombies(i).hp > 0) then
 					if (plants(i * M + zombies(i).x).hp > 0) then
 						if (plants(i * M + zombies(i).x).plant_type="10") then -- 坚果墙的防御力较高，特殊处理
 							plants(i * M + zombies(i).x).hp <= plants(i * M + zombies(i).x).hp - NUT_HARM;
@@ -141,6 +150,7 @@ begin
 				end if;
 			end loop;
 
+			-- 判断是否输了
 			for i in 0 to N-1 loop
 				if (zombies(i).hp > 0 and zombies(i).x = 0 and plants(i * M + zombies(i).x).hp = 0) then
 					has_lost := '1';
