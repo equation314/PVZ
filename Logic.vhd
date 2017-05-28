@@ -20,7 +20,7 @@ architecture bhv of Logic is
 	signal count: std_logic_vector(24 downto 0);
 	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal pea_clk, zombie_clk: std_logic;
-	signal plants: plant_vector := (("00", "1010", M, '0', "0000"), ("00", "1010", M, '0', "0000"), others => ("00", "0000", M, '0', "0000"));
+	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("00", "1010", M, '0', "0000"), others => ("00", "0000", M, '0', "0000"));
 	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
@@ -98,7 +98,7 @@ begin
 			-- 更新新产生僵尸的hp
 			for i in 0 to N-1 loop
 				if zombies(i).hp = 0 and zombies_to_update(i)='1' then
-					zombies(i).hp <= "1010";
+					zombies(i).hp <= "0010";
 				end if;
 			end loop;
 
@@ -124,8 +124,8 @@ begin
 					passed_round <= passed_round + 1;
 					for i in 0 to N-1 loop
 						if zombies(i).hp = 0 then
-							zombies(i).x <= M-1;
-							zombies_to_update(i) <= '1';
+							--zombies(i).x <= M-1;
+							--zombies_to_update(i) <= '1';
 						end if;
 					end loop;
 					has_win := '0';
