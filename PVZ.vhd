@@ -18,6 +18,7 @@ end entity;
 architecture bhv of PVZ is
 	component Logic is
 		port(
+			reset: in std_logic;
 			clock: in std_logic;
 			out_plants: out plant_vector;
 			out_zombies: out zombie_vector;
@@ -79,6 +80,7 @@ architecture bhv of PVZ is
 	signal lost : std_logic := '0'; -- 输
 begin
 	l: Logic port map (
+		reset => not reset,
 		clock => game_clk,
 		out_plants => plants,
 		out_zombies => zombies,
