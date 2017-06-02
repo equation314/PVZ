@@ -36,22 +36,18 @@ begin
 	process(clock)
 	begin
 		if (clock'event and clock = '1') then
-			if reset='1' then
-				count <= (others => '0');
+			if rnd >= N then
+				rnd <= 0;
 			else
-				if rnd >= N then
-					rnd <= 0;
-				else
-					rnd <= rnd + 7;
-				end if;
+				rnd <= rnd + 7;
+			end if;
 
-				if (count = 30 * 1000000) then
-					count <= (others => '0');
-					pea_clk <= '1';
-				else
-					count <= count + 1;
-					pea_clk <= '0';
-				end if;
+			if (count = 30 * 1000000) then
+				count <= (others => '0');
+				pea_clk <= '1';
+			else
+				count <= count + 1;
+				pea_clk <= '0';
 			end if;
 		end if;
 	end process;
