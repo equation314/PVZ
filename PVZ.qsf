@@ -58,7 +58,7 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
-set_location_assignment PIN_AF4 -to reset
+set_location_assignment PIN_AC6 -to reset
 set_location_assignment PIN_U3 -to hs
 set_location_assignment PIN_U4 -to vs
 set_location_assignment PIN_N2 -to clk_0
@@ -76,6 +76,13 @@ set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 
+set_location_assignment PIN_AD7 -to ps2_data
+set_location_assignment PIN_AD6 -to ps2_clk
+set_global_assignment -name LAST_QUARTUS_VERSION "9.1 SP2"
+set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
+set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
+set_location_assignment PIN_AC6 -to reset
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 set_global_assignment -name VHDL_FILE PVZ.vhd
 set_global_assignment -name VHDL_FILE Logic.vhd
 set_global_assignment -name VHDL_FILE lib/pvz.vhd
@@ -87,6 +94,3 @@ set_global_assignment -name QIP_FILE rom/Background.qip
 set_global_assignment -name VHDL_FILE rom/Background.vhd
 set_global_assignment -name QIP_FILE rom/Objects.qip
 set_global_assignment -name VHDL_FILE rom/Objects.vhd
-set_location_assignment PIN_AD7 -to ps2_data
-set_location_assignment PIN_AD6 -to ps2_clk
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

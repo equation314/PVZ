@@ -10,7 +10,8 @@ package pvz_objects is
 		plant_type: std_logic_vector(1 downto 0); -- 00: peashooter; 01: sunflower; 10: wallnut
 		hp: std_logic_vector(3 downto 0); -- 植物血量
 		pea: integer range 0 to M; -- 豌豆横坐标
-		pea_cd: std_logic_vector(3 downto 0); -- 发射豌豆的 CD
+		with_sun : std_logic;
+		cd: std_logic_vector(3 downto 0); -- 发射豌豆/阳光的 CD
 	end record;
 
 	type zombie is record

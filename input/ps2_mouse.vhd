@@ -15,7 +15,7 @@ entity ps2_mouse is
         ps2_data : inout std_logic;
         left_button : out std_logic;
         right_button : out std_logic;
-		middle_button : out std_logic;
+		  middle_button : out std_logic;
         mousex: buffer std_logic_vector(9 downto 0);
         mousey: buffer std_logic_vector(9 downto 0);
         error_no_ack : out std_logic );

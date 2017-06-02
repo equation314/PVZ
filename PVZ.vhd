@@ -20,12 +20,14 @@ end entity;
 architecture bhv of PVZ is
 	component Logic is
 		port(
+			reset: in std_logic;
 			clock: in std_logic;
 			out_plants: out plant_vector;
 			out_zombies: out zombie_vector;
 			new_plant: in std_logic;
 			new_plant_type: in std_logic_vector(1 downto 0);
-			new_plant_x, new_plant_y: in integer range 0 to M-1
+			new_plant_x, new_plant_y: in integer range 0 to M-1;
+			out_win, out_lost : out std_logic
 		);
 	end component;
 	component Input is
@@ -74,13 +76,16 @@ architecture bhv of PVZ is
 			q_obj: in std_logic_vector(11 downto 0);
 			req_x, req_y: in std_logic_vector(9 downto 0);
 			res_r, res_g, res_b: out std_logic_vector(2 downto 0);
-			plants: plant_vector;
-			zombies: zombie_vector;
+			plants: in plant_vector;
+			zombies: in zombie_vector;
 			mousex, mousey: in std_logic_vector(9 downto 0);
-			state: in mouse_state
+			state: in mouse_state;
+			win: in std_logic;
+			lost: in std_logic
 		);
 	end component;
 
+	signal game_clk: std_logic;
 	signal clk50: std_logic;
 	signal address_bg: std_logic_vector(15 downto 0);
 	signal address_obj: std_logic_vector(15 downto 0);
@@ -95,14 +100,19 @@ architecture bhv of PVZ is
 	signal new_plant: std_logic;
 	signal new_plant_type: std_logic_vector(1 downto 0);
 	signal new_plant_x, new_plant_y: integer range 0 to M-1;
+	signal win: std_logic := '0'; -- 赢
+	signal lost: std_logic := '0'; -- 输
 begin
 	l: Logic port map (
-		clock => clk50,
+		reset => not reset,
+		clock => game_clk,
 		out_plants => plants,
 		out_zombies => zombies,
 		new_plant => new_plant,
 		new_plant_type => new_plant_type,
-		new_plant_x => new_plant_x, new_plant_y => new_plant_y
+		new_plant_x => new_plant_x, new_plant_y => new_plant_y,
+		out_win => win,
+		out_lost => lost
 	);
 	i: Input port map (
 		clock => clk50,
@@ -115,6 +125,7 @@ begin
 		new_plant_type => new_plant_type,
 		new_plant_x => new_plant_x, new_plant_y => new_plant_y
 	);
+
 	vga: VGA640x480 port map (
 		reset => reset,
 		clk50 => clk50,
@@ -145,6 +156,13 @@ begin
 		plants => plants,
 		zombies => zombies,
 		mousex => mousex, mousey => mousey,
-		state => state
+		state => state,
+		win => win,
+		lost => lost
 	);
+
+	gc: process(clk50, win, lost)
+	begin
+		game_clk <= clk50 and not (win or lost);
+	end process;
 end architecture;
