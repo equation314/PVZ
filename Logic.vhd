@@ -143,7 +143,7 @@ begin
 			-- 同时判断是否获胜
 			if reset='1' then
 				has_win := '0';
-				has_lost := '0'
+				has_lost := '0';
 				out_win <= '0';
 				out_lost <= '0';
 				for i in 0 to N-1 loop
