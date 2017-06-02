@@ -11,7 +11,10 @@ entity Logic is
 	port(
 		clock: in std_logic;
 		out_plants: out plant_vector;
-		out_zombies: out zombie_vector
+		out_zombies: out zombie_vector;
+		new_plant: in std_logic;  -- 新植物信号
+		new_plant_type: in std_logic_vector(1 downto 0);  -- 新植物类型
+		new_plant_x, new_plant_y: in integer range 0 to M-1  -- 新植物坐标
 	);
 end entity;
 
@@ -26,7 +29,7 @@ begin
 
 	process(clock)
 	begin
-		if (clock'event and clock = '1') then
+		if (rising_edge(clock)) then
 			if (count = 20 * 1000000) then
 				count <= (others => '0');
 				pea_clk <= '1';
@@ -39,16 +42,16 @@ begin
 
 	process(pea_clk)
 	begin
-		if (pea_clk'event and pea_clk = '1') then
+		if (rising_edge(pea_clk)) then
 			zombie_clk <= not zombie_clk;
 		end if;
 	end process;
 
 	-- 处理豌豆
-	process(pea_clk)
+	process(pea_clk, new_plant)
 		variable p: plant;
 	begin
-		if (pea_clk'event and pea_clk = '1') then
+		if (rising_edge(pea_clk)) then
 			for i in 0 to N-1 loop
 				for j in 0 to M-1 loop
 					p := plants(i * M + j);
@@ -73,13 +76,14 @@ begin
 					end if;
 				end loop;
 			end loop;
+
 		end if;
 	end process;
 
 	-- 处理僵尸
 	process(zombie_clk)
 	begin
-		if (zombie_clk'event and zombie_clk = '1') then
+		if (rising_edge(zombie_clk)) then
 			for i in 0 to N-1 loop
 				if (zombies(i).hp > 0) then
 					if (plants(i * M + zombies(i).x).hp > 0) then
