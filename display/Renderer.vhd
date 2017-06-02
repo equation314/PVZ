@@ -30,7 +30,7 @@ architecture bhv of Renderer is
 	signal x, y: std_logic_vector(9 downto 0);
 	signal r, g, b: std_logic_vector(2 downto 0);
 	signal count: std_logic_vector(24 downto 0);
-	signal fps: std_logic_vector(2 downto 0);
+	signal fps: std_logic_vector(3 downto 0);
 	signal tmp_r, tmp_r1, tmp_g, tmp_g1, tmp_b, tmp_b1: integer range 0 to 7;
 begin
 	x <= req_x;
@@ -42,7 +42,7 @@ begin
 	process(clock)
 	begin
 		if (rising_edge(clock)) then
-			if (count = 5 * 1000000) then
+			if (count = 10 * 1000000) then
 				count <= (others => '0');
 				fps <= fps + 1;
 			else
@@ -127,14 +127,16 @@ begin
 				-- 僵尸
 				for i in 0 to N-1 loop
 					if (zombies(i).hp > 0) then
-						x1 := zombies(i).x * 16 * 4 + 8 * 4;
-						y1 := i * 20 * 4 + 18 * 4;
-						x2 := x1 + 8 * 4;
-						y2 := y1 + 16 * 4;
+						x1 := zombies(i).x * 16 * 4;
+						y1 := i * 20 * 4 + 14 * 4;
+						x2 := x1 + 12 * 4;
+						y2 := y1 + 20 * 4;
 						if (x1 <= x and x < x2 and y1 <= y and y < y2) then
-							tmp_r <= 7;
-							tmp_g <= 0;
-							tmp_b <= 0;
+							address_obj <= "01" & fps & conv_std_logic_vector(conv_integer(x - x1) / 2 * 40 + conv_integer(y - y1) / 2, 10);
+							alpha := conv_integer(q_obj(2 downto 0));
+							tmp_r <= ((7 - alpha) * bg_r + alpha * conv_integer(q_obj(11 downto 9))) / 7;
+							tmp_g <= ((7 - alpha) * bg_g + alpha * conv_integer(q_obj(8 downto 6))) / 7;
+							tmp_b <= ((7 - alpha) * bg_b + alpha * conv_integer(q_obj(5 downto 3))) / 7;
 						end if;
 					end if;
 				end loop;
@@ -151,7 +153,7 @@ begin
 						-- 已有的植物
 						if (p.hp > 0) then
 							if (x1 <= x and x < x2 and y1 <= y and y < y2) then
-								address_obj <= '1' & p.plant_type & fps & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
+								address_obj <= '1' & p.plant_type & fps(2 downto 0) & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
 								alpha := conv_integer(q_obj(2 downto 0));
 								tmp_r <= ((7 - alpha) * bg_r + alpha * conv_integer(q_obj(11 downto 9))) / 7;
 								tmp_g <= ((7 - alpha) * bg_g + alpha * conv_integer(q_obj(8 downto 6))) / 7;
