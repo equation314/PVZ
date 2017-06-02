@@ -63,7 +63,6 @@ begin
 	-- 僵尸的hp只能在这个process里更新
 	process(pea_clk, new_plant, reset)
 		variable p: plant;
-		variable has_win : std_logic := '0';
 		variable x, y: integer range 0 to M-1;
 	begin
 		if (rising_edge(pea_clk)) then
@@ -88,7 +87,7 @@ begin
 					for j in 0 to M-1 loop
 						p := plants(i * M + j);
 						if (p.hp > 0 and p.plant_type = "00") then
-							if (zombies(i).hp > 0) then
+							if (zombies(i).hp > 0 and zombies(i).x >= j) then
 								if (p.pea = zombies(i).x) then
 									p.pea := M;
 									zombies(i).hp <= zombies(i).hp - 2;
@@ -146,7 +145,7 @@ begin
 	begin
 		if (rising_edge(zombie_clk)) then
 			-- TODO 放置植物有延时
-			if (new_plant = '1') then
+			if (new_plant = '1' and reset='0') then
 				plants(new_plant_y*M + new_plant_x).hp <= "1010";
 				plants(new_plant_y*M + new_plant_x).plant_type <= new_plant_type;
 			end if;
@@ -154,7 +153,6 @@ begin
 			-- 新产生僵尸
 			-- 同时判断是否获胜
 			if reset='1' then
-				has_win := '0';
 				has_lost := '0';
 				out_win <= '0';
 				out_lost <= '0';
@@ -168,7 +166,7 @@ begin
 				if pea_clk_count=ROUND_CLK then
 					pea_clk_count <= (others => '0');
 					if passed_round = WIN_CONDITION then
-						has_win := '1';
+						has_win := '0';
 					else
 						new_y := NEW_ZOMBIE_Y(passed_round);
 						zombie_to_update <= new_y;
@@ -177,10 +175,10 @@ begin
 						has_win := '0';
 					end if;
 				else
+					has_win := '0';
 					pea_clk_count <= pea_clk_count + 1;
 					zombie_to_update <= N;
 				end if;
-				out_win <= has_win;
 
 				for i in 0 to N-1 loop
 					if (zombies(i).hp > 0) then
@@ -204,6 +202,9 @@ begin
 				end loop;
 				out_lost <= has_lost;
 			end if;
+
+			out_win <= has_win;
+
 		end if;
 
 	end process;
