@@ -148,8 +148,11 @@ begin
 			if reset='1' then
 				out_win <= '0';
 				out_lost <= '0';
+<<<<<<< HEAD
 				has_win := '0';
 				has_lost := '0'
+=======
+>>>>>>> 6be1c2dd34f7caae985a4ece82190ecef758e178
 				for i in 0 to N-1 loop
 					for j in 0 to M-1 loop
 						plants(i*M + j).hp <= "0000";
