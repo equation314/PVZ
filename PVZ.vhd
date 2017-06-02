@@ -37,6 +37,7 @@ architecture bhv of PVZ is
 			ps2_data : inout std_logic;
 			mousex, mousey: out std_logic_vector(9 downto 0);
 			state: out mouse_state;
+			plants: in plant_vector;
 			new_plant: out std_logic;
 			new_plant_type: out std_logic_vector(1 downto 0);
 			new_plant_x, new_plant_y: out integer range 0 to M-1
@@ -121,6 +122,7 @@ begin
 		ps2_data => ps2_data,
 		mousex => mousex, mousey => mousey,
 		state => state,
+		plants => plants,
 		new_plant => new_plant,
 		new_plant_type => new_plant_type,
 		new_plant_x => new_plant_x, new_plant_y => new_plant_y
@@ -163,6 +165,7 @@ begin
 
 	gc: process(clk50, win, lost)
 	begin
+		game_clk <= clk50;
 		game_clk <= clk50 and not (win or lost);
 	end process;
 end architecture;

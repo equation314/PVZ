@@ -68,12 +68,20 @@ begin
 
 	-- 处理豌豆
 	-- 僵尸的hp只能在这个process里更新
-	process(pea_clk, reset)
+	process(pea_clk, new_plant, reset)
 		variable p: plant;
 		variable has_win : std_logic := '0';
+		variable x, y: integer range 0 to M-1;
 	begin
-
 		if (rising_edge(pea_clk)) then
+			if (new_plant = '1') then
+				x := new_plant_x;
+				y := new_plant_y;
+				plants(y*M + x).pea <= M;
+				plants(y*M + x).with_sun <= '0';
+				plants(y*M + x).cd <= "0000";
+			end if;
+
 			if (reset='1') then
 				for i in 0 to N-1 loop
 					for j in 0 to M-1 loop
@@ -139,13 +147,19 @@ begin
 
 	-- 处理僵尸
 	-- 僵尸的x只能在这里更新
-	process(zombie_clk, rnd, reset)
+	process(zombie_clk, new_plant, rnd, reset)
 		constant NUT_HARM : integer := 1;
 		constant NORM_HARM : integer := 2;
 		variable has_lost : std_logic := '0';
 		variable has_win : std_logic := '0';
 	begin
 		if (rising_edge(zombie_clk)) then
+			-- TODO 放置植物有延时
+			if (new_plant = '1') then
+				plants(new_plant_y*M + new_plant_x).hp <= "1010";
+				plants(new_plant_y*M + new_plant_x).plant_type <= new_plant_type;
+			end if;
+
 			-- 新产生僵尸
 			-- 同时判断是否获胜
 			if reset='1' then

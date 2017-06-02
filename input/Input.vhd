@@ -13,6 +13,7 @@ entity Input is
 		ps2_data: inout std_logic;
 		mousex, mousey: out std_logic_vector(9 downto 0); -- 鼠标坐标输出
 		state: out mouse_state := NO; -- 鼠标状态输出
+		plants: in plant_vector; -- 输入输入
 		new_plant: out std_logic; -- 新植物信号
 		new_plant_type: out std_logic_vector(1 downto 0); -- 新植物类型
 		new_plant_x, new_plant_y: out integer range 0 to M-1 -- 新植物坐标
@@ -69,14 +70,14 @@ begin
 				s1 <= NO;
 			end if;
 		elsif (falling_edge(left_button)) then
-			s2 <= NO;
 
 			if (x < 9 * 64 and 18 * 4 <= y and y < 18 * 4 + 5 * 80) then
+				s2 <= UP;
 				px := conv_integer(x(9 downto 6));
 				py := conv_integer(y - 18 * 4) / 80;
 				new_plant_x <= px;
 				new_plant_y <= py;
-				--if (plants(py * M + px).hp = 0) then
+				if (plants(py * M + px).hp = 0) then
 					new_plant <= '1';
 					if (s1 = PEASHOOTER_DOWN) then
 						new_plant_type <= "00";
@@ -85,12 +86,14 @@ begin
 					elsif (s1 = WALLNUT_DOWN) then
 						new_plant_type <= "10";
 					end if;
-				--end if;
+				end if;
+			else
+				new_plant <= '0';
+				s2 <= NO;
 			end if;
 		end if;
 		if (left_button = '1') then
 			state <= s1;
-			new_plant <= '0';
 		else
 			state <= s2;
 		end if;
