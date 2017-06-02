@@ -13,6 +13,9 @@ entity Logic is
 		clock: in std_logic;
 		out_plants: out plant_vector;
 		out_zombies: out zombie_vector;
+		new_plant: in std_logic;  -- 新植物信号
+		new_plant_type: in std_logic_vector(1 downto 0);  -- 新植物类型
+		new_plant_x, new_plant_y: in integer range 0 to M-1;  -- 新植物坐标
 		out_win, out_lost : out std_logic -- 输赢
 	);
 end entity;
@@ -35,7 +38,7 @@ begin
 
 	process(clock)
 	begin
-		if (clock'event and clock = '1') then
+		if (rising_edge(clock)) then
 			if rnd >= N then
 				rnd <= 0;
 			else
@@ -54,7 +57,7 @@ begin
 
 	process(pea_clk)
 	begin
-		if (pea_clk'event and pea_clk = '1') then
+		if (rising_edge(pea_clk)) then
 			zombie_clk <= not zombie_clk;
 		end if;
 	end process;
@@ -66,7 +69,7 @@ begin
 		variable has_win : std_logic := '0';
 	begin
 
-		if (pea_clk'event and pea_clk = '1') then
+		if (rising_edge(pea_clk)) then
 			if (reset='1') then
 				for i in 0 to N-1 loop
 					for j in 0 to M-1 loop
@@ -138,7 +141,7 @@ begin
 		variable has_lost : std_logic := '0';
 		variable has_win : std_logic := '0';
 	begin
-		if (zombie_clk'event and zombie_clk = '1') then
+		if (rising_edge(zombie_clk)) then
 			-- 新产生僵尸
 			-- 同时判断是否获胜
 			if reset='1' then
