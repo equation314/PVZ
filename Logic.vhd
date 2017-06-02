@@ -24,7 +24,7 @@ architecture bhv of Logic is
 	signal count: std_logic_vector(30 downto 0);
 	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal pea_clk, zombie_clk: std_logic;
-	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("00", "1010", M, '0', "0000"), others => ("01", "0000", M, '0', "0000"));
+	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("01", "1010", M, '0', "0000"), others => ("01", "0000", M, '0', "0000"));
 	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
@@ -88,7 +88,7 @@ begin
 						p := plants(i * M + j);
 						if (p.hp > 0 and p.plant_type = "00") then
 							if (zombies(i).hp > 0 and zombies(i).x >= j) then
-								if (p.pea = zombies(i).x) then
+								if (p.pea = zombies(i).x or p.pea = zombies(i).x-1) then
 									p.pea := M;
 									zombies(i).hp <= zombies(i).hp - 2;
 								elsif (p.pea < M) then
@@ -168,10 +168,10 @@ begin
 					if passed_round = WIN_CONDITION then
 						has_win := '0';
 					else
-						new_y := NEW_ZOMBIE_Y(passed_round);
-						zombie_to_update <= new_y;
-						passed_round <= passed_round + 1;
-						zombies(new_y).x <= M-1;
+						--new_y := NEW_ZOMBIE_Y(passed_round);
+						--zombie_to_update <= new_y;
+						--passed_round <= passed_round + 1;
+						--zombies(new_y).x <= M-1;
 						has_win := '0';
 					end if;
 				else
@@ -179,14 +179,15 @@ begin
 					pea_clk_count <= pea_clk_count + 1;
 					zombie_to_update <= N;
 				end if;
+				has_win := '0';
 
 				for i in 0 to N-1 loop
 					if (zombies(i).hp > 0) then
-						if (plants(i * M + zombies(i).x).hp > 0) then
-							if (plants(i * M + zombies(i).x).plant_type="10") then -- 坚果墙的防御力较高，特殊处理
-								plants(i * M + zombies(i).x).hp <= plants(i * M + zombies(i).x).hp - NUT_HARM;
+						if (plants(i * M + zombies(i).x-1).hp > 0) then
+							if (plants(i * M + zombies(i).x-1).plant_type="10") then -- 坚果墙的防御力较高，特殊处理
+								plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NUT_HARM;
 							else
-								plants(i * M + zombies(i).x).hp <= plants(i * M + zombies(i).x).hp - NORM_HARM;
+								plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NORM_HARM;
 							end if;
 						else
 							zombies(i).x <= zombies(i).x - 1;
