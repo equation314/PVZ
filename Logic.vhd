@@ -24,7 +24,7 @@ architecture bhv of Logic is
 	signal count: std_logic_vector(30 downto 0);
 	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal pea_clk, zombie_clk: std_logic;
-	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("00", "1010", M, '0', "0000"), others => ("00", "0000", M, '0', "0000"));
+	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("00", "1010", M, '0', "0000"), others => ("01", "0000", M, '0', "0000"));
 	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
@@ -163,6 +163,7 @@ begin
 						plants(i*M + j).hp <= "0000";
 					end loop;
 				end loop;
+				passed_round <= 0;
 			else
 				if pea_clk_count=ROUND_CLK then
 					pea_clk_count <= (others => '0');
