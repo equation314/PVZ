@@ -28,10 +28,12 @@ architecture bhv of Logic is
 	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
-	signal zombies_to_update : std_logic_vector(0 to N-1); -- 需要更新x的僵尸
 	signal rnd : integer range 0 to N-1 := 0;
-	constant ROUND_CLK : integer := 9;
+	constant ROUND_CLK : integer := 20;
 	constant WIN_CONDITION : integer := 10; -- 需要过10轮才能赢
+	constant NEW_ZOMBIE_Y : y_vector := (5, 2, 8, 3, 4, 0, 1, 6, 7, 0, 2, 6, 7, 3, 1, 5, 4, 8);
+
+	signal zombie_to_update : integer range 0 to M := M;
 begin
 	out_zombies <= zombies;
 	out_plants <= plants;
@@ -39,12 +41,6 @@ begin
 	process(clock)
 	begin
 		if (rising_edge(clock)) then
-			if rnd >= N then
-				rnd <= 0;
-			else
-				rnd <= rnd + 7;
-			end if;
-
 			if (count = 30 * 1000000) then
 				count <= (others => '0');
 				pea_clk <= '1';
@@ -122,24 +118,20 @@ begin
 				for i in 0 to N-1 loop
 					zombies(i).hp <= "0000";
 				end loop;
-			else
-				for i in 0 to N-1 loop
-					if zombies(i).hp = 0 and zombies_to_update(i)='1' then
-						zombies(i).hp <= "0010";
-					end if;
-				end loop;
+			elsif not(zombie_to_update = M) then
+					zombies(zombie_to_update).hp <= "0010";
 			end if;
-
 		end if;
 	end process;
 
 	-- 处理僵尸
 	-- 僵尸的x只能在这里更新
-	process(zombie_clk, rnd, reset)
+	process(zombie_clk, reset)
 		constant NUT_HARM : integer := 1;
 		constant NORM_HARM : integer := 2;
 		variable has_lost : std_logic := '0';
 		variable has_win : std_logic := '0';
+		variable new_y: integer range 0 to M-1;
 	begin
 		if (rising_edge(zombie_clk)) then
 			-- 新产生僵尸
@@ -160,18 +152,15 @@ begin
 					if passed_round = WIN_CONDITION then
 						has_win := '1';
 					else
+						new_y := NEW_ZOMBIE_Y(passed_round);
+						zombie_to_update <= new_y;
 						passed_round <= passed_round + 1;
-						for i in 0 to N-1 loop
-							if zombies(i).hp = 0  and rnd=i then
-								zombies(i).x <= M-1;
-								zombies_to_update(i) <= '1';
-							end if;
-						end loop;
+						zombies(new_y).x <= M-1;
 						has_win := '0';
 					end if;
 				else
 					pea_clk_count <= pea_clk_count + 1;
-					zombies_to_update <= (others => '0');
+					zombie_to_update <= M;
 				end if;
 				out_win <= has_win;
 

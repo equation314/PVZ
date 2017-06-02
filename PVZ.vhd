@@ -163,6 +163,7 @@ begin
 
 	gc: process(clk50, win, lost)
 	begin
-		game_clk <= clk50 and not (win or lost);
+		game_clk <= clk50;
+		--game_clk <= clk50 and not (win or lost);
 	end process;
 end architecture;
