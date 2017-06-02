@@ -78,13 +78,17 @@ begin
 				new_plant_x <= px;
 				new_plant_y <= py;
 				if (plants(py * M + px).hp = 0) then
-					new_plant <= '1';
 					if (s1 = PEASHOOTER_DOWN) then
+						new_plant <= '1';
 						new_plant_type <= "00";
 					elsif (s1 = SUNFLOWER_DOWN) then
+						new_plant <= '1';
 						new_plant_type <= "01";
 					elsif (s1 = WALLNUT_DOWN) then
+						new_plant <= '1';
 						new_plant_type <= "10";
+					else
+						new_plant <= '0';
 					end if;
 				end if;
 			else
