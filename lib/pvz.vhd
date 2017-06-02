@@ -21,6 +21,7 @@ package pvz_objects is
 
 	type plant_vector is array(0 to N*M-1) of plant;
 	type zombie_vector is array(0 to N-1) of zombie;
+	type y_vector is array(0 to N*4-1) of integer range 0 to N;
 
 	type mouse_state is (NO, SUNFLOWER_DOWN, PEASHOOTER_DOWN, WALLNUT_DOWN, UP);
 

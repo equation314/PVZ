@@ -56,7 +56,6 @@ begin
 		variable bg_r, bg_g, bg_b: integer range 0 to 7;
 		variable p: plant;
 	begin
-		if (rising_edge(clock)) then
 			address_bg <= conv_std_logic_vector(conv_integer(x + 200) / 4 * 120 + conv_integer(y) / 4, 16);
 			bg_r := conv_integer(q_bg(8 downto 6));
 			bg_g := conv_integer(q_bg(5 downto 3));
@@ -208,8 +207,6 @@ begin
 				g <= "000";
 				b <= "000";
 			end if;
-
-		end if;
 	end process;
 
 end architecture;
