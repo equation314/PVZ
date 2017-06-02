@@ -34,6 +34,7 @@ architecture bhv of Logic is
 	constant NEW_ZOMBIE_Y : y_vector := (1, 3, 0, 4, 2, 3, 2, 0, 1, 4, 2, 4, 3, 1, 0, 1, 0, 3, 2, 4);
 
 	signal zombie_to_update : integer range 0 to N := N;
+
 begin
 	out_zombies <= zombies;
 	out_plants <= plants;
@@ -132,6 +133,7 @@ begin
 		variable has_lost : std_logic := '0';
 		variable has_win : std_logic := '0';
 		variable new_y: integer range 0 to N-1;
+
 	begin
 		if (rising_edge(zombie_clk)) then
 			-- 新产生僵尸
