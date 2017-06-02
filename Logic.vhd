@@ -36,18 +36,22 @@ begin
 	process(clock)
 	begin
 		if (clock'event and clock = '1') then
-			if rnd >= N then
-				rnd <= 0;
-			else
-				rnd <= rnd + 7;
-			end if;
-
-			if (count = 30 * 1000000) then
+			if reset='1' then
 				count <= (others => '0');
-				pea_clk <= '1';
 			else
-				count <= count + 1;
-				pea_clk <= '0';
+				if rnd >= N then
+					rnd <= 0;
+				else
+					rnd <= rnd + 7;
+				end if;
+
+				if (count = 30 * 1000000) then
+					count <= (others => '0');
+					pea_clk <= '1';
+				else
+					count <= count + 1;
+					pea_clk <= '0';
+				end if;
 			end if;
 		end if;
 	end process;
@@ -145,7 +149,7 @@ begin
 				out_win <= '0';
 				out_lost <= '0';
 				has_win := '0';
-				has_lost := '0';
+				has_lost := '0'
 				for i in 0 to N-1 loop
 					for j in 0 to M-1 loop
 						plants(i*M + j).hp <= "0000";
@@ -159,7 +163,7 @@ begin
 					else
 						passed_round <= passed_round + 1;
 						for i in 0 to N-1 loop
-							if zombies(i).hp = 0  and rnd=i then -- 产生新僵尸
+							if zombies(i).hp = 0  and rnd=i then
 								zombies(i).x <= M-1;
 								zombies_to_update(i) <= '1';
 							end if;
@@ -187,7 +191,6 @@ begin
 				end loop;
 
 				-- 判断是否输了
-				has_lost := '0';
 				for i in 0 to N-1 loop
 					if (zombies(i).hp > 0 and zombies(i).x = 0 and plants(i * M + zombies(i).x).hp = 0) then
 						has_lost := '1';
