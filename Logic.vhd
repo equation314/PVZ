@@ -144,6 +144,8 @@ begin
 			if reset='1' then
 				has_win := '0';
 				has_lost := '0'
+				out_win <= '0';
+				out_lost <= '0';
 				for i in 0 to N-1 loop
 					for j in 0 to M-1 loop
 						plants(i*M + j).hp <= "0000";
