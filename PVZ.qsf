@@ -71,7 +71,6 @@ set_location_assignment PIN_U1 -to blue[2]
 set_location_assignment PIN_U2 -to blue[1]
 set_location_assignment PIN_T4 -to blue[0]
 
-set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 
