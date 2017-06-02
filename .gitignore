@@ -1,6 +1,10 @@
 db
+incremental_db
 output_files
 incremental_db
 *.bak
+simulation
+resources
+*tmp*
 *.qws
-
+*.bak
