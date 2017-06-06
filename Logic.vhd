@@ -24,7 +24,7 @@ architecture bhv of Logic is
 	signal count: std_logic_vector(30 downto 0);
 	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal pea_clk, zombie_clk: std_logic;
-	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("01", "1010", M, '0', "0000"), others => ("01", "1010", M, '0', "0000"));
+	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("01", "1010", M, '0', "0000"), others => ("01", "0000", M, '0', "0000"));
 	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
@@ -72,13 +72,15 @@ begin
 		if (rising_edge(pea_clk)) then
 			-- 放置植物
 			if (new_plant = '1' and reset='0') then
-				x := new_plant_x;
-				y := new_plant_y;
-				plants(y*M + x).pea <= M;
-				plants(y*M + x).with_sun <= '0';
-				plants(y*M + x).cd <= "0000";
-				plants(new_plant_y*M + new_plant_x).hp <= "1010";
-				plants(new_plant_y*M + new_plant_x).plant_type <= new_plant_type;
+				if (not(zombies(new_plant_y).x = new_plant_x and zombies(new_plant_y).hp > 0)) then
+					x := new_plant_x;
+					y := new_plant_y;
+					plants(y*M + x).pea <= M;
+					plants(y*M + x).with_sun <= '0';
+					plants(y*M + x).cd <= "0000";
+					plants(new_plant_y*M + new_plant_x).hp <= "1010";
+					plants(new_plant_y*M + new_plant_x).plant_type <= new_plant_type;
+				end if;
 			end if;
 
 			-- 更新植物
@@ -144,7 +146,7 @@ begin
 					pea_clk_count <= (others => '0');
 					if passed_round = WIN_CONDITION then
 						has_win := '0';
-					else
+					else -- 新增僵尸
 						--new_y := NEW_ZOMBIE_Y(passed_round);
 						--zombie_to_update <= new_y;
 						--passed_round <= passed_round + 1;
