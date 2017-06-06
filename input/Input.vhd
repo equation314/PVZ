@@ -23,16 +23,16 @@ end entity;
 architecture bhv of Input is
 	component ps2_mouse is
 		port(
-			clk_in : in std_logic;
-			reset_in : in std_logic;
-			ps2_clk : inout std_logic;
-			ps2_data : inout std_logic;
-			left_button : out std_logic;
-			right_button : out std_logic;
-			middle_button : out std_logic;
+			clk_in: in std_logic;
+			reset_in: in std_logic;
+			ps2_clk: inout std_logic;
+			ps2_data: inout std_logic;
+			left_button: out std_logic;
+			right_button: out std_logic;
+			middle_button: out std_logic;
 			mousex: buffer std_logic_vector(9 downto 0);
 			mousey: buffer std_logic_vector(9 downto 0);
-			error_no_ack : out std_logic
+			error_no_ack: out std_logic
 		);
 	end component;
 
