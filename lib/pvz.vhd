@@ -16,10 +16,11 @@ package pvz_objects is
 
 	type zombie is record
 		hp: std_logic_vector(3 downto 0); -- 僵尸血量
-		x: integer range 0 to M-1; -- 僵尸横坐标
+		x: integer range 0 to M; -- 僵尸横坐标
 	end record;
 
-	type plant_vector is array(0 to N*M-1) of plant;
+	type plant_vector is array(0 to M-1) of plant;
+	type plant_matrix is array(0 to N-1) of plant_vector;
 	type zombie_vector is array(0 to N-1) of zombie;
 	type y_vector is array(0 to N*4-1) of integer range 0 to N;
 

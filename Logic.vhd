@@ -25,7 +25,7 @@ architecture bhv of Logic is
 	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal zombie_count : std_logic_vector(5 downto 0);
 	signal pea_clk: std_logic;
-	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("01", "1010", M, '0', "0000"), others => ("01", "0000", M, '0', "0000"));
+	signal plants: plant_vector := (("10", "1010", M, '0', "0000"), ("01", "1010", M, '0', "0000"), others => ("10", "1010", M, '0', "0000"));
 	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
@@ -82,7 +82,7 @@ begin
 						plants(i*M + j).pea <= M;
 						plants(i*M + j).with_sun <= '0';
 						plants(i*M + j).cd <= "0000";
-						plants(i*M + j).hp <= "0000";
+						--plants(i*M + j).hp <= "0000";
 					end loop;
 				end loop;
 			else
@@ -141,7 +141,7 @@ begin
 					else -- 新增僵尸
 						new_y := NEW_ZOMBIE_Y(passed_round);
 						passed_round <= passed_round + 1;
-						zombies(new_y).x <= M-1;
+						zombies(new_y).x <= M;
 						zombies(new_y).hp <= "0101";
 						has_win := '0';
 					end if;
@@ -156,9 +156,9 @@ begin
 						if (zombies(i).hp > 0) then
 							if (plants(i * M + zombies(i).x-1).hp > 0) then
 								if (plants(i * M + zombies(i).x-1).plant_type="10") then -- 坚果墙的防御力较高，特殊处理
-									plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NUT_HARM;
+									--plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NUT_HARM;
 								else
-									plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NORM_HARM;
+									--plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NORM_HARM;
 								end if;
 							else
 								zombies(i).x <= zombies(i).x - 1;
