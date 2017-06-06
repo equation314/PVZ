@@ -24,7 +24,7 @@ architecture bhv of Logic is
 	signal count: std_logic_vector(30 downto 0);
 	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal pea_clk, zombie_clk: std_logic;
-	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("01", "1010", M, '0', "0000"), others => ("01", "0000", M, '0', "0000"));
+	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("01", "1010", M, '0', "0000"), others => ("01", "1010", M, '0', "0000"));
 	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
@@ -60,26 +60,35 @@ begin
 	end process;
 
 	-- 处理豌豆
-	-- 僵尸的hp只能在这个process里更新
 	process(pea_clk, new_plant, reset)
 		variable p: plant;
 		variable x, y: integer range 0 to M-1;
+		constant NUT_HARM : integer := 1;
+		constant NORM_HARM : integer := 2;
+		variable has_lost : std_logic := '0';
+		variable has_win : std_logic := '0';
+		variable new_y: integer range 0 to N-1;
 	begin
 		if (rising_edge(pea_clk)) then
-			if (new_plant = '1') then
+			-- 放置植物
+			if (new_plant = '1' and reset='0') then
 				x := new_plant_x;
 				y := new_plant_y;
 				plants(y*M + x).pea <= M;
 				plants(y*M + x).with_sun <= '0';
 				plants(y*M + x).cd <= "0000";
+				plants(new_plant_y*M + new_plant_x).hp <= "1010";
+				plants(new_plant_y*M + new_plant_x).plant_type <= new_plant_type;
 			end if;
 
+			-- 更新植物
 			if (reset='1') then
 				for i in 0 to N-1 loop
 					for j in 0 to M-1 loop
 						plants(i*M + j).pea <= M;
 						plants(i*M + j).with_sun <= '0';
 						plants(i*M + j).cd <= "0000";
+						plants(i*M + j).hp <= "0000";
 					end loop;
 				end loop;
 			else
@@ -121,46 +130,14 @@ begin
 				end loop;
 			end if;
 
-			-- 更新新产生僵尸的hp
-			if reset='1' then
+			-- 更新僵尸
+			if reset='1' then -- 重置僵尸
 				for i in 0 to N-1 loop
 					zombies(i).hp <= "0000";
 				end loop;
-			elsif not(zombie_to_update = N) then
-					zombies(zombie_to_update).hp <= "0010";
-			end if;
-		end if;
-	end process;
-
-	-- 处理僵尸
-	-- 僵尸的x只能在这里更新
-
-	process(zombie_clk, new_plant, rnd, reset)
-		constant NUT_HARM : integer := 1;
-		constant NORM_HARM : integer := 2;
-		variable has_lost : std_logic := '0';
-		variable has_win : std_logic := '0';
-		variable new_y: integer range 0 to N-1;
-
-	begin
-		if (rising_edge(zombie_clk)) then
-			-- TODO 放置植物有延时
-			if (new_plant = '1' and reset='0') then
-				plants(new_plant_y*M + new_plant_x).hp <= "1010";
-				plants(new_plant_y*M + new_plant_x).plant_type <= new_plant_type;
-			end if;
-
-			-- 新产生僵尸
-			-- 同时判断是否获胜
-			if reset='1' then
 				has_lost := '0';
 				out_win <= '0';
 				out_lost <= '0';
-				for i in 0 to N-1 loop
-					for j in 0 to M-1 loop
-						plants(i*M + j).hp <= "0000";
-					end loop;
-				end loop;
 				passed_round <= 0;
 			else
 				if pea_clk_count=ROUND_CLK then
@@ -172,6 +149,7 @@ begin
 						--zombie_to_update <= new_y;
 						--passed_round <= passed_round + 1;
 						--zombies(new_y).x <= M-1;
+						--zombies(new_y).hp <= "0101";
 						has_win := '0';
 					end if;
 				else
@@ -203,11 +181,8 @@ begin
 				end loop;
 				out_lost <= has_lost;
 			end if;
-
 			out_win <= has_win;
-
 		end if;
-
 	end process;
 
 end architecture;
