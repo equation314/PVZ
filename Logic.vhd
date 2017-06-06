@@ -23,17 +23,16 @@ end entity;
 architecture bhv of Logic is
 	signal count: std_logic_vector(30 downto 0);
 	signal pea_clk_count : std_logic_vector(10 downto 0);
-	signal pea_clk, zombie_clk: std_logic;
+	signal zombie_count : std_logic_vector(5 downto 0);
+	signal pea_clk: std_logic;
 	signal plants: plant_vector := (("01", "1010", M, '0', "0000"), ("01", "1010", M, '0', "0000"), others => ("01", "0000", M, '0', "0000"));
 	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
-	signal rnd : integer range 0 to N-1 := 0;
 	constant ROUND_CLK : integer := 20;
+	constant ZOMBIE_MOVE_COUNT : integer := 2;
 	constant WIN_CONDITION : integer := 10; -- 需要过10轮才能赢
 	constant NEW_ZOMBIE_Y : y_vector := (1, 3, 0, 4, 2, 3, 2, 0, 1, 4, 2, 4, 3, 1, 0, 1, 0, 3, 2, 4);
-
-	signal zombie_to_update : integer range 0 to N := N;
 
 begin
 	out_zombies <= zombies;
@@ -49,13 +48,6 @@ begin
 				count <= count + 1;
 				pea_clk <= '0';
 			end if;
-		end if;
-	end process;
-
-	process(pea_clk)
-	begin
-		if (rising_edge(pea_clk)) then
-			zombie_clk <= not zombie_clk;
 		end if;
 	end process;
 
@@ -147,33 +139,36 @@ begin
 					if passed_round = WIN_CONDITION then
 						has_win := '0';
 					else -- 新增僵尸
-						--new_y := NEW_ZOMBIE_Y(passed_round);
-						--zombie_to_update <= new_y;
-						--passed_round <= passed_round + 1;
-						--zombies(new_y).x <= M-1;
-						--zombies(new_y).hp <= "0101";
+						new_y := NEW_ZOMBIE_Y(passed_round);
+						passed_round <= passed_round + 1;
+						zombies(new_y).x <= M-1;
+						zombies(new_y).hp <= "0101";
 						has_win := '0';
 					end if;
 				else
 					has_win := '0';
 					pea_clk_count <= pea_clk_count + 1;
-					zombie_to_update <= N;
 				end if;
 				has_win := '0';
 
-				for i in 0 to N-1 loop
-					if (zombies(i).hp > 0) then
-						if (plants(i * M + zombies(i).x-1).hp > 0) then
-							if (plants(i * M + zombies(i).x-1).plant_type="10") then -- 坚果墙的防御力较高，特殊处理
-								plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NUT_HARM;
+				if (zombie_count=ZOMBIE_MOVE_COUNT) then
+					for i in 0 to N-1 loop
+						if (zombies(i).hp > 0) then
+							if (plants(i * M + zombies(i).x-1).hp > 0) then
+								if (plants(i * M + zombies(i).x-1).plant_type="10") then -- 坚果墙的防御力较高，特殊处理
+									plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NUT_HARM;
+								else
+									plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NORM_HARM;
+								end if;
 							else
-								plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NORM_HARM;
+								zombies(i).x <= zombies(i).x - 1;
 							end if;
-						else
-							zombies(i).x <= zombies(i).x - 1;
 						end if;
-					end if;
-				end loop;
+					end loop;
+					zombie_count <= (others=>'0');
+				else
+					zombie_count <= zombie_count + 1;
+				end if;
 
 				-- 判断是否输了
 				for i in 0 to N-1 loop
