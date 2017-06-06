@@ -22,7 +22,7 @@ architecture bhv of PVZ is
 		port(
 			reset: in std_logic;
 			clock: in std_logic;
-			out_plants: out plant_vector;
+			out_plants: out plant_matrix;
 			out_zombies: out zombie_vector;
 			new_plant: in std_logic;
 			new_plant_type: in std_logic_vector(1 downto 0);
@@ -37,7 +37,7 @@ architecture bhv of PVZ is
 			ps2_data : inout std_logic;
 			mousex, mousey: out std_logic_vector(9 downto 0);
 			state: out mouse_state;
-			plants: in plant_vector;
+			plants: in plant_matrix;
 			new_plant: out std_logic;
 			new_plant_type: out std_logic_vector(1 downto 0);
 			new_plant_x, new_plant_y: out integer range 0 to M-1
@@ -77,7 +77,7 @@ architecture bhv of PVZ is
 			q_obj: in std_logic_vector(11 downto 0);
 			req_x, req_y: in std_logic_vector(9 downto 0);
 			res_r, res_g, res_b: out std_logic_vector(2 downto 0);
-			plants: in plant_vector;
+			plants: in plant_matrix;
 			zombies: in zombie_vector;
 			mousex, mousey: in std_logic_vector(9 downto 0);
 			state: in mouse_state;
@@ -94,7 +94,7 @@ architecture bhv of PVZ is
 	signal q_obj: std_logic_vector(11 downto 0);
 	signal req_x, req_y: std_logic_vector(9 downto 0);
 	signal res_r, res_g, res_b: std_logic_vector(2 downto 0);
-	signal plants: plant_vector;
+	signal plants: plant_matrix;
 	signal zombies: zombie_vector;
 	signal mousex, mousey: std_logic_vector(9 downto 0);
 	signal state: mouse_state;

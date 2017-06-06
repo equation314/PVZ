@@ -11,7 +11,7 @@ entity Logic is
 	port(
 		reset: in std_logic;
 		clock: in std_logic;
-		out_plants: out plant_vector;
+		out_plants: out plant_matrix;
 		out_zombies: out zombie_vector;
 		new_plant: in std_logic;  -- 新植物信号
 		new_plant_type: in std_logic_vector(1 downto 0);  -- 新植物类型
@@ -25,7 +25,7 @@ architecture bhv of Logic is
 	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal zombie_count : std_logic_vector(5 downto 0);
 	signal pea_clk: std_logic;
-	signal plants: plant_vector := (("10", "1010", M, '0', "0000"), ("01", "1010", M, '0', "0000"), others => ("10", "1010", M, '0', "0000"));
+	signal plants: plant_matrix := (others => (others => ("10", "1010", M, '0', "0000")));
 	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
@@ -67,11 +67,11 @@ begin
 				if (not(zombies(new_plant_y).x = new_plant_x and zombies(new_plant_y).hp > 0)) then
 					x := new_plant_x;
 					y := new_plant_y;
-					plants(y*M + x).pea <= M;
-					plants(y*M + x).with_sun <= '0';
-					plants(y*M + x).cd <= "0000";
-					plants(new_plant_y*M + new_plant_x).hp <= "1010";
-					plants(new_plant_y*M + new_plant_x).plant_type <= new_plant_type;
+					plants(y)(x).pea <= M;
+					plants(y)(x).with_sun <= '0';
+					plants(y)(x).cd <= "0000";
+					plants(new_plant_y)(new_plant_x).hp <= "1010";
+					plants(new_plant_y)(new_plant_x).plant_type <= new_plant_type;
 				end if;
 			end if;
 
@@ -79,16 +79,16 @@ begin
 			if (reset='1') then
 				for i in 0 to N-1 loop
 					for j in 0 to M-1 loop
-						plants(i*M + j).pea <= M;
-						plants(i*M + j).with_sun <= '0';
-						plants(i*M + j).cd <= "0000";
+						plants(i)(j).pea <= M;
+						plants(i)(j).with_sun <= '0';
+						plants(i)(j).cd <= "0000";
 						--plants(i*M + j).hp <= "0000";
 					end loop;
 				end loop;
 			else
 				for i in 0 to N-1 loop
 					for j in 0 to M-1 loop
-						p := plants(i * M + j);
+						p := plants(i)(j);
 						if (p.hp > 0 and p.plant_type = "00") then
 							if (zombies(i).hp > 0 and zombies(i).x >= j) then
 								if (p.pea = zombies(i).x or p.pea = zombies(i).x-1) then
@@ -106,7 +106,7 @@ begin
 							if (p.cd > 0) then
 								p.cd := p.cd - 1;
 							end if;
-							plants(i * M + j) <= p;
+							plants(i)(j) <= p;
 						elsif (p.hp > 0 and p.plant_type = "01") then -- 向日葵产生阳光
 							if (p.cd = 0) then
 								if (p.with_sun = '1') then
@@ -118,7 +118,7 @@ begin
 							else
 								p.cd := p.cd - 1;
 							end if;
-							plants(i * M + j) <= p;
+							plants(i)(j) <= p;
 						end if;
 					end loop;
 				end loop;
@@ -154,11 +154,11 @@ begin
 				if (zombie_count=ZOMBIE_MOVE_COUNT) then
 					for i in 0 to N-1 loop
 						if (zombies(i).hp > 0) then
-							if (plants(i * M + zombies(i).x-1).hp > 0) then
-								if (plants(i * M + zombies(i).x-1).plant_type="10") then -- 坚果墙的防御力较高，特殊处理
-									--plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NUT_HARM;
+							if (plants(i)(zombies(i).x-1).hp > 0) then
+								if (plants(i)(zombies(i).x-1).plant_type="10") then -- 坚果墙的防御力较高，特殊处理
+									plants(i)(zombies(i).x-1).hp <= plants(i)(zombies(i).x-1).hp - NUT_HARM;
 								else
-									--plants(i * M + zombies(i).x-1).hp <= plants(i * M + zombies(i).x-1).hp - NORM_HARM;
+									plants(i)(zombies(i).x-1).hp <= plants(i)(zombies(i).x-1).hp - NORM_HARM;
 								end if;
 							else
 								zombies(i).x <= zombies(i).x - 1;
@@ -172,7 +172,7 @@ begin
 
 				-- 判断是否输了
 				for i in 0 to N-1 loop
-					if (zombies(i).hp > 0 and zombies(i).x = 0 and plants(i * M + zombies(i).x).hp = 0) then
+					if (zombies(i).hp > 0 and zombies(i).x = 0 and plants(i)(zombies(i).x).hp = 0) then
 						has_lost := '1';
 					end if;
 				end loop;

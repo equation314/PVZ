@@ -16,7 +16,7 @@ entity Renderer is
 		q_obj: in std_logic_vector(11 downto 0); -- 物体资源值
 		req_x, req_y: in std_logic_vector(9 downto 0); -- 询问坐标输入
 		res_r, res_g, res_b: out std_logic_vector(2 downto 0); -- 颜色输出
-		plants: in plant_vector; -- 植物输入
+		plants: in plant_matrix; -- 植物输入
 		zombies: in zombie_vector; -- 僵尸输入
 		mousex, mousey: in std_logic_vector(9 downto 0); -- 鼠标坐标输入
 		state: in mouse_state; -- 鼠标状态输入
@@ -124,7 +124,7 @@ begin
 						y1 := i * 20 * 4 + 18 * 4;
 						x2 := x1 + 16 * 4;
 						y2 := y1 + 16 * 4;
-						p := plants(i * M + j);
+						p := plants(i)(j);
 
 						-- 已有的植物
 						if (p.hp > 0) then
