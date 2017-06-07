@@ -26,12 +26,12 @@ architecture bhv of Logic is
 	signal zombie_count : std_logic_vector(5 downto 0);
 	signal pea_clk: std_logic;
 	signal plants: plant_matrix := (others => (others => ("10", "1010", M, '0', "0000")));
-	signal zombies: zombie_vector := (("1010", 15), others => ("0000", 0));
+	signal zombies: zombie_vector := (others => ("0000", 0));
 	signal passed_round : integer := 0; -- 过去了多少轮
 
 	constant ROUND_CLK : integer := 20;
 	constant ZOMBIE_MOVE_COUNT : integer := 2;
-	constant WIN_CONDITION : integer := 10; -- 需要过10轮才能赢
+	constant WIN_CONDITION : integer := 3; -- 需要过10轮才能赢
 	constant NEW_ZOMBIE_Y : y_vector := (1, 3, 0, 4, 2, 3, 2, 0, 1, 4, 2, 4, 3, 1, 0, 1, 0, 3, 2, 4);
 
 begin
@@ -58,7 +58,6 @@ begin
 		constant NUT_HARM : integer := 1;
 		constant NORM_HARM : integer := 2;
 		variable has_lost : std_logic := '0';
-		variable has_win : std_logic := '0';
 		variable new_y: integer range 0 to N-1;
 	begin
 		if (rising_edge(pea_clk)) then
@@ -130,26 +129,22 @@ begin
 					zombies(i).hp <= "0000";
 				end loop;
 				has_lost := '0';
-				out_win <= '0';
 				out_lost <= '0';
 				passed_round <= 0;
 			else
 				if pea_clk_count=ROUND_CLK then
 					pea_clk_count <= (others => '0');
 					if passed_round = WIN_CONDITION then
-						has_win := '0';
+						out_win <= '1';
 					else -- 新增僵尸
 						new_y := NEW_ZOMBIE_Y(passed_round);
 						passed_round <= passed_round + 1;
 						zombies(new_y).x <= M;
 						zombies(new_y).hp <= "0101";
-						has_win := '0';
 					end if;
 				else
-					has_win := '0';
 					pea_clk_count <= pea_clk_count + 1;
 				end if;
-				has_win := '0';
 
 				if (zombie_count=ZOMBIE_MOVE_COUNT) then
 					for i in 0 to N-1 loop
@@ -178,8 +173,16 @@ begin
 				end loop;
 				out_lost <= has_lost;
 			end if;
-			out_win <= has_win;
 		end if;
 	end process;
+
+	--process(passed_round)
+	--begin
+		--if (passed_round >= WIN_CONDITION) then
+			--out_win <= '1';
+		--else
+			--out_win <= '0';
+		--end if;
+	--end process;
 
 end architecture;

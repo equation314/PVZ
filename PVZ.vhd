@@ -13,7 +13,8 @@ entity PVZ is
 		hs, vs: out std_logic;
 		red, green, blue: out std_logic_vector(2 downto 0);
 		ps2_clk : inout std_logic;
-		ps2_data : inout std_logic
+		ps2_data : inout std_logic;
+		win_indicate : out std_logic
 	);
 end entity;
 
@@ -166,6 +167,7 @@ begin
 	gc: process(clk50, win, lost)
 	begin
 		game_clk <= clk50;
+		win_indicate <= win;
 		--game_clk <= clk50 and not (win or lost);
 	end process;
 end architecture;
