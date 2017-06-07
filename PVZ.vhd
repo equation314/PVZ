@@ -12,8 +12,14 @@ entity PVZ is
 		clk_0, reset: in std_logic; --100m 时钟输入
 		hs, vs: out std_logic;
 		red, green, blue: out std_logic_vector(2 downto 0);
-		ps2_clk : inout std_logic;
-		ps2_data : inout std_logic
+		ps2_clk: inout std_logic;
+		ps2_data: inout std_logic;
+
+		BASERAMWE: out std_logic; --write
+		BASERAMOE: out std_logic; --read
+		BASERAMCE: out std_logic; --cs
+		BASERAMADDR: out std_logic_vector(19 downto 0);
+		BASERAMDATA: in std_logic_vector(31 downto 0)
 	);
 end entity;
 
@@ -27,14 +33,28 @@ architecture bhv of PVZ is
 			new_plant: in std_logic;
 			new_plant_type: in std_logic_vector(1 downto 0);
 			new_plant_x, new_plant_y: in integer range 0 to M-1;
-			out_win, out_lost : out std_logic
+			out_win, out_lost: out std_logic
+		);
+	end component;
+	component Objects is
+		port (
+			address: in std_logic_vector (15 downto 0);
+			clock: in std_logic;
+			q: out std_logic_vector (11 downto 0)
+		);
+	end component;
+	component PeaSun is
+		port (
+			address: in std_logic_vector (12 downto 0);
+			clock: in std_logic;
+			q: out std_logic_vector (11 downto 0)
 		);
 	end component;
 	component Input is
 		port(
 			clock, reset: in std_logic;
-			ps2_clk : inout std_logic;
-			ps2_data : inout std_logic;
+			ps2_clk: inout std_logic;
+			ps2_data: inout std_logic;
 			mousex, mousey: out std_logic_vector(9 downto 0);
 			state: out mouse_state;
 			plants: in plant_vector;
@@ -54,27 +74,14 @@ architecture bhv of PVZ is
 			res_r, res_g, res_b: in std_logic_vector(2 downto 0)
 		);
 	end component;
-	component Background is
-		port (
-			address: in std_logic_vector (15 downto 0);
-			clock: in std_logic;
-			q : out std_logic_vector (8 downto 0)
-		);
-	end component;
-	component Objects is
-		port (
-			address: in std_logic_vector (15 downto 0);
-			clock: in std_logic;
-			q: out std_logic_vector (11 downto 0)
-		);
-	end component;
 	component Renderer is
 		port(
 			clock: in std_logic;
-			address_bg: out std_logic_vector(15 downto 0);
+			address_sram: out std_logic_vector(19 downto 0);
 			address_obj: out std_logic_vector(15 downto 0);
-			q_bg: in std_logic_vector(8 downto 0);
-			q_obj: in std_logic_vector(11 downto 0);
+			address_ps: out std_logic_vector(12 downto 0);
+			q_sram: in std_logic_vector(31 downto 0);
+			q_obj, q_ps: in std_logic_vector(11 downto 0);
 			req_x, req_y: in std_logic_vector(9 downto 0);
 			res_r, res_g, res_b: out std_logic_vector(2 downto 0);
 			plants: in plant_vector;
@@ -87,11 +94,10 @@ architecture bhv of PVZ is
 	end component;
 
 	signal game_clk: std_logic;
-	signal clk50: std_logic;
-	signal address_bg: std_logic_vector(15 downto 0);
+	signal clk50, clk25: std_logic;
 	signal address_obj: std_logic_vector(15 downto 0);
-	signal q_bg: std_logic_vector(8 downto 0);
-	signal q_obj: std_logic_vector(11 downto 0);
+	signal address_ps: std_logic_vector(12 downto 0);
+	signal q_obj, q_ps: std_logic_vector(11 downto 0);
 	signal req_x, req_y: std_logic_vector(9 downto 0);
 	signal res_r, res_g, res_b: std_logic_vector(2 downto 0);
 	signal plants: plant_vector;
@@ -104,6 +110,18 @@ architecture bhv of PVZ is
 	signal win: std_logic := '0'; -- 赢
 	signal lost: std_logic := '0'; -- 输
 begin
+	BASERAMCE <= '0';
+	BASERAMOE <= '0';
+	BASERAMWE <= '1';
+
+	process(clk50)
+	begin
+		if (rising_edge(clk50)) then
+			clk25 <= not clk25;
+		end if;
+	end process;
+
+	-- logic
 	l: Logic port map (
 		reset => not reset,
 		clock => game_clk,
@@ -115,8 +133,22 @@ begin
 		out_win => win,
 		out_lost => lost
 	);
-	i: Input port map (
+
+	-- rom
+	obj: Objects port map (
+		address => address_obj,
 		clock => clk50,
+		q => q_obj
+	);
+	ps: PeaSun port map (
+		address => address_ps,
+		clock => clk50,
+		q => q_ps
+	);
+
+	-- input
+	i: Input port map (
+		clock => clk_0,
 		reset => reset,
 		ps2_clk => ps2_clk,
 		ps2_data => ps2_data,
@@ -128,6 +160,7 @@ begin
 		new_plant_x => new_plant_x, new_plant_y => new_plant_y
 	);
 
+	-- display
 	vga: VGA640x480 port map (
 		reset => reset,
 		clk50 => clk50,
@@ -137,22 +170,14 @@ begin
 		req_x => req_x, req_y => req_y,
 		res_r => res_r, res_g => res_g, res_b => res_b
 	);
-	bg: Background port map (
-		address => address_bg,
-		clock => clk50,
-		q => q_bg
-	);
-	obj: Objects port map (
-		address => address_obj,
-		clock => clk50,
-		q => q_obj
-	);
 	ren: Renderer port map (
 		clock => clk50,
-		address_bg => address_bg,
+		address_sram => BASERAMADDR,
 		address_obj => address_obj,
-		q_bg => q_bg,
+		address_ps => address_ps,
+		q_sram => BASERAMDATA,
 		q_obj => q_obj,
+		q_ps => q_ps,
 		req_x => req_x, req_y => req_y,
 		res_r => res_r, res_g => res_g, res_b => res_b,
 		plants => plants,
