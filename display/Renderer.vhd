@@ -17,12 +17,11 @@ entity Renderer is
 		q_obj, q_ps: in std_logic_vector(11 downto 0); -- 物体资源值，豌豆、阳光资源值
 		req_x, req_y: in std_logic_vector(9 downto 0); -- 询问坐标输入
 		res_r, res_g, res_b: out std_logic_vector(2 downto 0); -- 颜色输出
-		plants: in plant_vector; -- 植物输入
+		plants: in plant_matrix; -- 植物输入
 		zombies: in zombie_vector; -- 僵尸输入
 		mousex, mousey: in std_logic_vector(9 downto 0); -- 鼠标坐标输入
 		state: in mouse_state; -- 鼠标状态输入
-		win: in std_logic;
-		lost: in std_logic
+		game_state: in game_state
 	);
 end entity;
 
@@ -58,12 +57,12 @@ begin
 	begin
 		if (rising_edge(clock)) then
 
-			if (lost = '1') then
+			if (game_state=S_LOST) then
 				address_sram <= conv_std_logic_vector(conv_integer(x) * 480 + conv_integer(y), 20);
 				r <= q_sram(17 downto 15);
 				g <= q_sram(14 downto 12);
 				b <= q_sram(11 downto 9);
-			elsif (win = '1') then
+			elsif (game_state=S_WIN) then
 				address_sram <= conv_std_logic_vector(conv_integer(x) * 480 + conv_integer(y), 20);
 				r <= q_sram(26 downto 24);
 				g <= q_sram(23 downto 21);
@@ -98,13 +97,21 @@ begin
 				end case;
 			elsif (10 <= x and x < 20 and 10 <= y and y < 20) then
 				-- 输赢提示
-				if lost='1' then
+				if game_state=S_LOST then
 					r <= "111";
 					g <= "000";
 					b <= "000";
-				elsif win='1' then
+				elsif game_state=S_WIN then
 					r <= "000";
 					g <= "111";
+					b <= "000";
+				elsif game_state=S_START then
+					r <= "111";
+					g <= "111";
+					b <= "111";
+				else
+					r <= "000";
+					g <= "000";
 					b <= "000";
 				end if;
 			elsif (mousex - 4 <= x and x < mousex + 4 and mousey - 4 <= y and y < mousey + 4) then
@@ -158,7 +165,7 @@ begin
 							y1 := i * 20 * 4 + 18 * 4;
 							x2 := x1 + 16 * 4;
 							y2 := y1 + 16 * 4;
-							p := plants(i * M + j);
+							p := plants(i)(j);
 
 							-- 已有的植物
 							if (p.hp > 0) then

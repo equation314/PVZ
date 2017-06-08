@@ -19,7 +19,8 @@ entity PVZ is
 		BASERAMOE: out std_logic; --read
 		BASERAMCE: out std_logic; --cs
 		BASERAMADDR: out std_logic_vector(19 downto 0);
-		BASERAMDATA: in std_logic_vector(31 downto 0)
+		BASERAMDATA: in std_logic_vector(31 downto 0);
+		digit: out std_logic_vector(3 downto 0)
 	);
 end entity;
 
@@ -28,12 +29,13 @@ architecture bhv of PVZ is
 		port(
 			reset: in std_logic;
 			clock: in std_logic;
-			out_plants: out plant_vector;
+			out_plants: out plant_matrix;
 			out_zombies: out zombie_vector;
 			new_plant: in std_logic;
 			new_plant_type: in std_logic_vector(1 downto 0);
 			new_plant_x, new_plant_y: in integer range 0 to M-1;
-			out_win, out_lost: out std_logic
+			out_lost: out std_logic;
+			out_round: out std_logic_vector(3 downto 0)
 		);
 	end component;
 	component Objects is
@@ -57,7 +59,7 @@ architecture bhv of PVZ is
 			ps2_data: inout std_logic;
 			mousex, mousey: out std_logic_vector(9 downto 0);
 			state: out mouse_state;
-			plants: in plant_vector;
+			plants: in plant_matrix;
 			new_plant: out std_logic;
 			new_plant_type: out std_logic_vector(1 downto 0);
 			new_plant_x, new_plant_y: out integer range 0 to M-1
@@ -84,14 +86,21 @@ architecture bhv of PVZ is
 			q_obj, q_ps: in std_logic_vector(11 downto 0);
 			req_x, req_y: in std_logic_vector(9 downto 0);
 			res_r, res_g, res_b: out std_logic_vector(2 downto 0);
-			plants: in plant_vector;
+			plants: in plant_matrix;
 			zombies: in zombie_vector;
 			mousex, mousey: in std_logic_vector(9 downto 0);
 			state: in mouse_state;
-			win: in std_logic;
-			lost: in std_logic
+			game_state: in game_state
 		);
 	end component;
+
+	component Encoder is
+	  port(
+	    in_digit: in std_logic_vector(3 downto 0);
+	    out_digit: out std_logic_vector(6 downto 0)
+	  );
+	end component;
+
 
 	signal game_clk: std_logic;
 	signal clk50, clk25: std_logic;
@@ -100,7 +109,7 @@ architecture bhv of PVZ is
 	signal q_obj, q_ps: std_logic_vector(11 downto 0);
 	signal req_x, req_y: std_logic_vector(9 downto 0);
 	signal res_r, res_g, res_b: std_logic_vector(2 downto 0);
-	signal plants: plant_vector;
+	signal plants: plant_matrix;
 	signal zombies: zombie_vector;
 	signal mousex, mousey: std_logic_vector(9 downto 0);
 	signal state: mouse_state;
@@ -109,6 +118,14 @@ architecture bhv of PVZ is
 	signal new_plant_x, new_plant_y: integer range 0 to M-1;
 	signal win: std_logic := '0'; -- 赢
 	signal lost: std_logic := '0'; -- 输
+	signal restart: std_logic := '0'; -- 重置游戏
+	signal rnd : std_logic_vector(3 downto 0);
+
+	signal current_state : game_state := S_START;
+	signal next_state : game_state := S_START;
+
+	constant WIN_CONDITION : std_logic_vector(3 downto 0) := "1000"; -- 需要过8轮才能赢
+
 begin
 	BASERAMCE <= '0';
 	BASERAMOE <= '0';
@@ -123,15 +140,15 @@ begin
 
 	-- logic
 	l: Logic port map (
-		reset => not reset,
+		reset => restart,
 		clock => game_clk,
 		out_plants => plants,
 		out_zombies => zombies,
 		new_plant => new_plant,
 		new_plant_type => new_plant_type,
 		new_plant_x => new_plant_x, new_plant_y => new_plant_y,
-		out_win => win,
-		out_lost => lost
+		out_lost => lost,
+		out_round => rnd
 	);
 
 	-- rom
@@ -184,13 +201,50 @@ begin
 		zombies => zombies,
 		mousex => mousex, mousey => mousey,
 		state => state,
-		win => win,
-		lost => lost
+		game_state => current_state
 	);
 
-	gc: process(clk50, win, lost)
+	gc: process(clk50, current_state)
 	begin
-		game_clk <= clk50;
-		--game_clk <= clk50 and not (win or lost);
+		if (current_state=S_PLAYING) then
+			game_clk <= clk50;
+		else
+			game_clk <= '0';
+		end if;
+	end process;
+
+	fsm: process(clk50)
+	begin
+		if reset='0' then
+			current_state <= S_START;
+			--next_state <= S_START;
+		elsif rising_edge(clk50) then
+			current_state <= next_state;
+		end if;
+	end process;
+
+	com: process(current_state)
+	begin
+		case current_state is
+			when S_START =>
+				next_state <= S_PLAYING;
+			when S_PLAYING =>
+				if lost = '1' then
+					next_state <= S_LOST;
+				elsif rnd = WIN_CONDITION then
+					next_state <= S_WIN;
+				else
+					next_state <= S_PLAYING;
+				end if;
+			when S_LOST =>
+				next_state <= S_LOST;
+			when S_WIN =>
+				next_state <= S_WIN;
+		end case;
+	end process;
+
+	process(rnd)
+	begin
+		digit <= rnd;
 	end process;
 end architecture;
