@@ -180,11 +180,9 @@ begin
 		game_state => current_state
 	);
 
-	gc: process(clk50, win, lost)
+	gc: process(clk50, current_state)
 	begin
-		game_clk <= clk50;
-		win_indicate <= win;
-		--game_clk <= clk50 and not (win or lost);
+		game_clk <= clk50 and (current_state=S_PLAYING);
 	end process;
 
 	fsm: process(clk50)
