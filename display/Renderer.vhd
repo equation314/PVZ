@@ -20,8 +20,7 @@ entity Renderer is
 		zombies: in zombie_vector; -- 僵尸输入
 		mousex, mousey: in std_logic_vector(9 downto 0); -- 鼠标坐标输入
 		state: in mouse_state; -- 鼠标状态输入
-		win: in std_logic;
-		lost: in std_logic
+		game_state: in game_state
 	);
 end entity;
 
@@ -94,14 +93,18 @@ begin
 				end case;
 			elsif (10 <= x and x < 20 and 10 <= y and y < 20) then
 				-- 输赢提示
-				if lost='1' then
+				if game_state=S_LOST then
 					r <= "111";
 					g <= "000";
 					b <= "000";
-				elsif win='1' then
+				elsif game_state=S_WIN then
 					r <= "000";
 					g <= "111";
 					b <= "000";
+				else
+					r <= "111";
+					g <= "111";
+					b <= "111";
 				end if;
 			elsif (mousex - 4 <= x and x < mousex + 4 and mousey - 4 <= y and y < mousey + 4) then
 				-- 鼠标指针

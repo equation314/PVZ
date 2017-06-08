@@ -16,7 +16,7 @@ entity Logic is
 		new_plant: in std_logic;  -- 新植物信号
 		new_plant_type: in std_logic_vector(1 downto 0);  -- 新植物类型
 		new_plant_x, new_plant_y: in integer range 0 to M-1;  -- 新植物坐标
-		out_win, out_lost : out std_logic; -- 输赢
+		out_lost : out std_logic; -- 输赢
 		out_round : out std_logic_vector(3 downto 0)
 	);
 end entity;
@@ -32,7 +32,6 @@ architecture bhv of Logic is
 
 	constant ROUND_CLK : integer := 20;
 	constant ZOMBIE_MOVE_COUNT : integer := 2;
-	constant WIN_CONDITION : std_logic_vector(3 downto 0) := "0100"; -- 需要过10轮才能赢
 	constant NEW_ZOMBIE_Y : y_vector := (1, 3, 0, 4, 2, 3, 2, 0, 1, 4, 2, 4, 3, 1, 0, 1, 0, 3, 2, 4);
 
 begin
@@ -136,14 +135,10 @@ begin
 			else
 				if pea_clk_count=ROUND_CLK then
 					pea_clk_count <= (others => '0');
-					if passed_round = WIN_CONDITION then
-						out_win <= '0';
-					else -- 新增僵尸
-						new_y := NEW_ZOMBIE_Y(conv_integer(unsigned(passed_round)));
-						passed_round <= passed_round + 1;
-						zombies(new_y).x <= M;
-						zombies(new_y).hp <= "0101";
-					end if;
+					new_y := NEW_ZOMBIE_Y(conv_integer(unsigned(passed_round)));
+					passed_round <= passed_round + 1;
+					zombies(new_y).x <= M;
+					zombies(new_y).hp <= "0101";
 				else
 					pea_clk_count <= pea_clk_count + 1;
 				end if;

@@ -15,7 +15,7 @@ entity PVZ is
 		ps2_clk : inout std_logic;
 		ps2_data : inout std_logic;
 		win_indicate : out std_logic;
-		digit: out std_logic_vector(6 downto 0)
+		digit: out std_logic_vector(3 downto 0)
 	);
 end entity;
 
@@ -29,7 +29,7 @@ architecture bhv of PVZ is
 			new_plant: in std_logic;
 			new_plant_type: in std_logic_vector(1 downto 0);
 			new_plant_x, new_plant_y: in integer range 0 to M-1;
-			out_win, out_lost : out std_logic;
+			out_lost : out std_logic;
 			out_round: out std_logic_vector(3 downto 0)
 		);
 	end component;
@@ -84,8 +84,7 @@ architecture bhv of PVZ is
 			zombies: in zombie_vector;
 			mousex, mousey: in std_logic_vector(9 downto 0);
 			state: in mouse_state;
-			win: in std_logic;
-			lost: in std_logic
+			game_state: in game_state
 		);
 	end component;
 
@@ -117,6 +116,11 @@ architecture bhv of PVZ is
 	signal restart: std_logic := '0'; -- 重置游戏
 	signal rnd : std_logic_vector(3 downto 0);
 
+	signal current_state : game_state := S_START;
+	signal next_state : game_state := S_START;
+
+	constant WIN_CONDITION : std_logic_vector(3 downto 0) := "1000"; -- 需要过8轮才能赢
+
 begin
 	l: Logic port map (
 		reset => restart,
@@ -126,7 +130,6 @@ begin
 		new_plant => new_plant,
 		new_plant_type => new_plant_type,
 		new_plant_x => new_plant_x, new_plant_y => new_plant_y,
-		out_win => win,
 		out_lost => lost,
 		out_round => rnd
 	);
@@ -174,11 +177,8 @@ begin
 		zombies => zombies,
 		mousex => mousex, mousey => mousey,
 		state => state,
-		win => win,
-		lost => lost
+		game_state => current_state
 	);
-
-	enc: Encoder port map (in_digit => rnd, out_digit => digit);
 
 	gc: process(clk50, win, lost)
 	begin
@@ -187,4 +187,38 @@ begin
 		--game_clk <= clk50 and not (win or lost);
 	end process;
 
+	fsm: process(clk50)
+	begin
+		if reset='0' then
+			current_state <= S_START;
+			--next_state <= S_START;
+		elsif rising_edge(clk50) then
+			current_state <= next_state;
+		end if;
+	end process;
+
+	com: process(current_state)
+	begin
+		case current_state is
+			when S_START =>
+				next_state <= S_PLAYING;
+			when S_PLAYING =>
+				if lost = '1' then
+					next_state <= S_LOST;
+				elsif rnd = WIN_CONDITION then
+					next_state <= S_WIN;
+				else
+					next_state <= S_PLAYING;
+				end if;
+			when S_LOST =>
+				next_state <= S_LOST;
+			when S_WIN =>
+				next_state <= S_WIN;
+		end case;
+	end process;
+
+	process(rnd)
+	begin
+		digit <= rnd;
+	end process;
 end architecture;
