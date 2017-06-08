@@ -16,7 +16,8 @@ entity Logic is
 		new_plant: in std_logic;  -- 新植物信号
 		new_plant_type: in std_logic_vector(1 downto 0);  -- 新植物类型
 		new_plant_x, new_plant_y: in integer range 0 to M-1;  -- 新植物坐标
-		out_win, out_lost : out std_logic -- 输赢
+		out_win, out_lost : out std_logic; -- 输赢
+		out_round : out std_logic_vector(3 downto 0)
 	);
 end entity;
 
@@ -27,11 +28,11 @@ architecture bhv of Logic is
 	signal pea_clk: std_logic;
 	signal plants: plant_matrix := (others => (others => ("10", "1010", M, '0', "0000")));
 	signal zombies: zombie_vector := (others => ("0000", 0));
-	signal passed_round : integer := 0; -- 过去了多少轮
+	signal passed_round : std_logic_vector(3 downto 0) := (others => '0'); -- 过去了多少轮
 
 	constant ROUND_CLK : integer := 20;
 	constant ZOMBIE_MOVE_COUNT : integer := 2;
-	constant WIN_CONDITION : integer := 3; -- 需要过10轮才能赢
+	constant WIN_CONDITION : std_logic_vector(3 downto 0) := "0100"; -- 需要过10轮才能赢
 	constant NEW_ZOMBIE_Y : y_vector := (1, 3, 0, 4, 2, 3, 2, 0, 1, 4, 2, 4, 3, 1, 0, 1, 0, 3, 2, 4);
 
 begin
@@ -60,6 +61,7 @@ begin
 		variable has_lost : std_logic := '0';
 		variable new_y: integer range 0 to N-1;
 	begin
+
 		if (rising_edge(pea_clk)) then
 			-- 放置植物
 			if (new_plant = '1' and reset='0') then
@@ -130,14 +132,14 @@ begin
 				end loop;
 				has_lost := '0';
 				out_lost <= '0';
-				passed_round <= 0;
+				passed_round <= (others => '0');
 			else
 				if pea_clk_count=ROUND_CLK then
 					pea_clk_count <= (others => '0');
 					if passed_round = WIN_CONDITION then
-						out_win <= '1';
+						out_win <= '0';
 					else -- 新增僵尸
-						new_y := NEW_ZOMBIE_Y(passed_round);
+						new_y := NEW_ZOMBIE_Y(conv_integer(unsigned(passed_round)));
 						passed_round <= passed_round + 1;
 						zombies(new_y).x <= M;
 						zombies(new_y).hp <= "0101";
@@ -176,13 +178,9 @@ begin
 		end if;
 	end process;
 
-	--process(passed_round)
-	--begin
-		--if (passed_round >= WIN_CONDITION) then
-			--out_win <= '1';
-		--else
-			--out_win <= '0';
-		--end if;
-	--end process;
+	process(passed_round)
+	begin
+		out_round <= passed_round;
+	end process;
 
 end architecture;

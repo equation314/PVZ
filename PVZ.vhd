@@ -14,7 +14,8 @@ entity PVZ is
 		red, green, blue: out std_logic_vector(2 downto 0);
 		ps2_clk : inout std_logic;
 		ps2_data : inout std_logic;
-		win_indicate : out std_logic
+		win_indicate : out std_logic;
+		digit: out std_logic_vector(6 downto 0)
 	);
 end entity;
 
@@ -28,7 +29,8 @@ architecture bhv of PVZ is
 			new_plant: in std_logic;
 			new_plant_type: in std_logic_vector(1 downto 0);
 			new_plant_x, new_plant_y: in integer range 0 to M-1;
-			out_win, out_lost : out std_logic
+			out_win, out_lost : out std_logic;
+			out_round: out std_logic_vector(3 downto 0)
 		);
 	end component;
 	component Input is
@@ -87,6 +89,14 @@ architecture bhv of PVZ is
 		);
 	end component;
 
+	component Encoder is
+	  port(
+	    in_digit: in std_logic_vector(3 downto 0);
+	    out_digit: out std_logic_vector(6 downto 0)
+	  );
+	end component;
+
+
 	signal game_clk: std_logic;
 	signal clk50: std_logic;
 	signal address_bg: std_logic_vector(15 downto 0);
@@ -104,9 +114,12 @@ architecture bhv of PVZ is
 	signal new_plant_x, new_plant_y: integer range 0 to M-1;
 	signal win: std_logic := '0'; -- 赢
 	signal lost: std_logic := '0'; -- 输
+	signal restart: std_logic := '0'; -- 重置游戏
+	signal rnd : std_logic_vector(3 downto 0);
+
 begin
 	l: Logic port map (
-		reset => not reset,
+		reset => restart,
 		clock => game_clk,
 		out_plants => plants,
 		out_zombies => zombies,
@@ -114,7 +127,8 @@ begin
 		new_plant_type => new_plant_type,
 		new_plant_x => new_plant_x, new_plant_y => new_plant_y,
 		out_win => win,
-		out_lost => lost
+		out_lost => lost,
+		out_round => rnd
 	);
 	i: Input port map (
 		clock => clk50,
@@ -164,10 +178,13 @@ begin
 		lost => lost
 	);
 
+	enc: Encoder port map (in_digit => rnd, out_digit => digit);
+
 	gc: process(clk50, win, lost)
 	begin
 		game_clk <= clk50;
 		win_indicate <= win;
 		--game_clk <= clk50 and not (win or lost);
 	end process;
+
 end architecture;

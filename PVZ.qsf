@@ -80,6 +80,8 @@ set_global_assignment -name LAST_QUARTUS_VERSION "9.1 SP2"
 set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
 set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
 set_location_assignment PIN_AC6 -to reset
+set_location_assignment PIN_AC7 -to win_indicate
+set_global_assignment -name MISC_FILE "Z:/нд╦Е/PVZ/PVZ.dpf"
 set_global_assignment -name VHDL_FILE PVZ.vhd
 set_global_assignment -name VHDL_FILE Logic.vhd
 set_global_assignment -name VHDL_FILE lib/pvz.vhd
@@ -92,6 +94,4 @@ set_global_assignment -name VHDL_FILE rom/Background.vhd
 set_global_assignment -name QIP_FILE rom/Objects.qip
 set_global_assignment -name VHDL_FILE rom/Objects.vhd
 set_global_assignment -name CDF_FILE output_files/Chain1.cdf
-set_location_assignment PIN_AC7 -to win_indicate
-set_global_assignment -name MISC_FILE "Z:/нд╦Е/PVZ/PVZ.dpf"
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
