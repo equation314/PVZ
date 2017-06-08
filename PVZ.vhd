@@ -20,7 +20,8 @@ entity PVZ is
 		BASERAMCE: out std_logic; --cs
 		BASERAMADDR: out std_logic_vector(19 downto 0);
 		BASERAMDATA: in std_logic_vector(31 downto 0);
-		digit: out std_logic_vector(3 downto 0)
+		digit: out std_logic_vector(3 downto 0);
+		state_out: out std_logic_vector(2 downto 0)
 	);
 end entity;
 
@@ -227,18 +228,26 @@ begin
 	begin
 		case current_state is
 			when S_START =>
+				state_out <= "000";
+				restart <= '0';
 				next_state <= S_PLAYING;
 			when S_PLAYING =>
+				state_out <= "001";
 				if lost = '1' then
 					next_state <= S_LOST;
 				elsif rnd = WIN_CONDITION then
 					next_state <= S_WIN;
 				else
 					next_state <= S_PLAYING;
+					restart <= '0';
 				end if;
 			when S_LOST =>
+				state_out <= "010";
+				restart <= '1';
 				next_state <= S_LOST;
 			when S_WIN =>
+				state_out <= "100";
+				restart <= '1';
 				next_state <= S_WIN;
 		end case;
 	end process;

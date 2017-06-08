@@ -150,4 +150,7 @@ set_global_assignment -name QIP_FILE rom/PeaSun.qip
 set_global_assignment -name VHDL_FILE rom/PeaSun.vhd
 
 set_global_assignment -name MISC_FILE "\\\\vmware-host\\Shared Folders\\нд╦Е\\PVZ\\PVZ.dpf"
+set_location_assignment PIN_AD23 -to state_out[2]
+set_location_assignment PIN_AD22 -to state_out[1]
+set_location_assignment PIN_AE22 -to state_out[0]
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
