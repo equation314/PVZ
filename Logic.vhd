@@ -44,7 +44,7 @@ begin
 	begin
 		if (rising_edge(clock)) then
 			restart <= reset;
-			if (count = 32 * 1000000) then
+			if (count = 32000000) then
 				count <= (others => '0');
 				pea_clk <= '1';
 			else

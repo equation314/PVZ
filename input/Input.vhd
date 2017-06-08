@@ -73,10 +73,10 @@ begin
 				s1 <= NO;
 			end if;
 		elsif (falling_edge(left_button)) then
-			if (x < 9 * 64 and 18 * 4 <= y and y < 18 * 4 + 5 * 80) then
+			if (x < 576 and 72 <= y and y < 472) then
 				s2 <= UP;
 				px := conv_integer(x(9 downto 6));
-				py := conv_integer(y - 18 * 4) / 80;
+				py := conv_integer(y - 72) / 80;
 				new_plant_x <= px;
 				new_plant_y <= py;
 				if (plants(py)(px).hp = 0) then

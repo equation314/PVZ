@@ -212,9 +212,9 @@ begin
 		if (rising_edge(clk50)) then
 			case current_state is
 				when S_WIN =>
+					restart <= '1';
 					if (click = '1' and fuck = '0') then
 						if (200 <= mousex and mousex < 440 and 435 <= mousey and mousey < 460) then
-							restart <= '1';
 							fuck <= '1';
 							current_state <= S_PLAYING;
 						end if;

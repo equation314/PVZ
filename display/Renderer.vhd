@@ -41,7 +41,7 @@ begin
 	process(clock)
 	begin
 		if (rising_edge(clock)) then
-			if (count = 8 * 1000000) then
+			if (count = 8000000) then
 				count <= (others => '0');
 				fps <= fps + 1;
 			else
@@ -57,54 +57,54 @@ begin
 	begin
 		if (rising_edge(clock)) then
 
-			if (x < 10 and y < 10) then
-				-- 鼠标状态提示
-				case state is
-				when NO =>
-					r <= "111";
-					g <= "111";
-					b <= "111";
-				when SUNFLOWER_DOWN =>
-					r <= "111";
-					g <= "000";
-					b <= "000";
-				when PEASHOOTER_DOWN =>
-					r <= "000";
-					g <= "111";
-					b <= "000";
-				when WALLNUT_DOWN =>
-					r <= "000";
-					g <= "000";
-					b <= "111";
-				when UP =>
-					r <= "111";
-					g <= "111";
-					b <= "000";
-				when others =>
-					r <= "000";
-					g <= "000";
-					b <= "000";
-				end case;
-			elsif (10 <= x and x < 20 and 10 <= y and y < 20) then
-				-- 输赢提示
-				if game_state=S_LOST then
-					r <= "111";
-					g <= "000";
-					b <= "000";
-				elsif game_state=S_WIN then
-					r <= "000";
-					g <= "111";
-					b <= "000";
-				elsif game_state=S_PLAYING then
-					r <= "111";
-					g <= "111";
-					b <= "111";
-				else
-					r <= "000";
-					g <= "000";
-					b <= "000";
-				end if;
-			elsif (mousex - 4 <= x and x < mousex + 4 and mousey - 4 <= y and y < mousey + 4) then
+			-- if (x < 10 and y < 10) then
+			-- 	-- 鼠标状态提示
+			-- 	case state is
+			-- 	when NO =>
+			-- 		r <= "111";
+			-- 		g <= "111";
+			-- 		b <= "111";
+			-- 	when SUNFLOWER_DOWN =>
+			-- 		r <= "111";
+			-- 		g <= "000";
+			-- 		b <= "000";
+			-- 	when PEASHOOTER_DOWN =>
+			-- 		r <= "000";
+			-- 		g <= "111";
+			-- 		b <= "000";
+			-- 	when WALLNUT_DOWN =>
+			-- 		r <= "000";
+			-- 		g <= "000";
+			-- 		b <= "111";
+			-- 	when UP =>
+			-- 		r <= "111";
+			-- 		g <= "111";
+			-- 		b <= "000";
+			-- 	when others =>
+			-- 		r <= "000";
+			-- 		g <= "000";
+			-- 		b <= "000";
+			-- 	end case;
+			-- elsif (10 <= x and x < 20 and 10 <= y and y < 20) then
+			-- 	-- 输赢提示
+			-- 	if game_state=S_LOST then
+			-- 		r <= "111";
+			-- 		g <= "000";
+			-- 		b <= "000";
+			-- 	elsif game_state=S_WIN then
+			-- 		r <= "000";
+			-- 		g <= "111";
+			-- 		b <= "000";
+			-- 	elsif game_state=S_PLAYING then
+			-- 		r <= "111";
+			-- 		g <= "111";
+			-- 		b <= "111";
+			-- 	else
+			-- 		r <= "000";
+			-- 		g <= "000";
+			-- 		b <= "000";
+			-- 	end if;
+			if (mousex - 4 <= x and x < mousex + 4 and mousey - 4 <= y and y < mousey + 4) then
 				-- 鼠标指针
 				r <= "000";
 				g <= "000";
@@ -138,10 +138,10 @@ begin
 					-- 僵尸
 					for i in 0 to N-1 loop
 						if (zombies(i).hp > 0) then
-							x1 := zombies(i).x * 16 * 4;
-							y1 := i * 20 * 4 + 14 * 4;
-							x2 := x1 + 12 * 4;
-							y2 := y1 + 20 * 4;
+							x1 := zombies(i).x * 64;
+							y1 := i * 80 + 56;
+							x2 := x1 + 48;
+							y2 := y1 + 80;
 							if (x1 <= x and x < x2 and y1 <= y and y < y2) then
 								address_obj <= "10" & fps & conv_std_logic_vector(conv_integer(x - x1) / 2 * 40 + conv_integer(y - y1) / 2, 10);
 								alpha := conv_integer(q_obj(2 downto 0));
@@ -155,10 +155,10 @@ begin
 					-- 植物
 					for i in 0 to N-1 loop
 						for j in M-1 downto 0 loop
-							x1 := j * 16 * 4;
-							y1 := i * 20 * 4 + 18 * 4;
-							x2 := x1 + 16 * 4;
-							y2 := y1 + 16 * 4;
+							x1 := j * 64;
+							y1 := i * 80 + 72;
+							x2 := x1 + 64;
+							y2 := y1 + 64;
 							p := plants(i)(j);
 
 							-- 已有的植物
@@ -173,8 +173,8 @@ begin
 
 								-- 阳光
 								if (p.with_sun='1') then
-									if (x1 + 4 * 4 <= x and x < x2 + 4 * 4 and y1 + 10 * 4 <= y and y < y1 + 26 * 4) then
-										address_ps <= "0" & conv_std_logic_vector(conv_integer(x - x1 - 4 * 4) * 64 + conv_integer(y - y1 - 10 * 4), 12);
+									if (x1 + 16 <= x and x < x2 + 16 and y1 + 40 <= y and y < y1 + 104) then
+										address_ps <= "0" & conv_std_logic_vector(conv_integer(x - x1 - 16) * 64 + conv_integer(y - y1 - 40), 12);
 										alpha := conv_integer(q_ps(2 downto 0));
 										tmp_r1 <= ((7 - alpha) * tmp_r + alpha * conv_integer(q_ps(11 downto 9))) / 7;
 										tmp_g1 <= ((7 - alpha) * tmp_g + alpha * conv_integer(q_ps(8 downto 6))) / 7;
@@ -184,11 +184,11 @@ begin
 
 								-- 豌豆
 								if (p.pea < M) then
-									if (zombies(i).x = p.pea) then
-										x1 := p.pea * 16 * 4 + 8 * 4;
-										y1 := i * 20 * 4 + 20 * 4;
-										x2 := x1 + 4 * 4;
-										y2 := y1 + 4 * 4;
+									if (zombies(i).hp > 0 and zombies(i).x = p.pea + 1) then
+										x1 := p.pea * 64 + 64;
+										y1 := i * 80 + 80;
+										x2 := x1 + 16;
+										y2 := y1 + 16;
 										if (x1 <= x and x < x2 and y1 <= y and y < y2) then
 											address_ps <= "10001" & conv_std_logic_vector(conv_integer(x - x1) * 16 + conv_integer(y - y1), 8);
 											alpha := conv_integer(q_ps(2 downto 0));
@@ -197,10 +197,10 @@ begin
 											tmp_b1 <= ((7 - alpha) * tmp_b + alpha * conv_integer(q_ps(5 downto 3))) / 7;
 										end if;
 									else
-										x1 := p.pea * 16 * 4 + 12 * 4 + conv_integer(fps(1 downto 0)) * 16;
-										y1 := i * 20 * 4 + 20 * 4;
-										x2 := x1 + 4 * 4;
-										y2 := y1 + 4 * 4;
+										x1 := p.pea * 64 + 48 + conv_integer(fps(1 downto 0) & "0000");
+										y1 := i * 80 + 80;
+										x2 := x1 + 16;
+										y2 := y1 + 16;
 										if (x1 <= x and x < x2 and y1 <= y and y < y2) then
 											address_ps <= "10000" & conv_std_logic_vector(conv_integer(x - x1) * 16 + conv_integer(y - y1), 8);
 											alpha := conv_integer(q_ps(2 downto 0));
