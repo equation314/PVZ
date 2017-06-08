@@ -26,7 +26,7 @@ architecture bhv of Logic is
 	signal pea_clk_count : std_logic_vector(10 downto 0);
 	signal zombie_count : std_logic_vector(5 downto 0);
 	signal pea_clk: std_logic;
-	signal plants: plant_matrix := (others => (others => ("10", "0000", M, '0', "0000")));
+	signal plants: plant_matrix := (others => (others => ("01", "0000", M, '0', "0000")));
 	signal zombies: zombie_vector := (others => ("0000", 0));
 	signal passed_round : std_logic_vector(3 downto 0) := (others => '0'); -- 过去了多少轮
 
@@ -86,7 +86,7 @@ begin
 						y := new_plant_y;
 						plants(y)(x).pea <= M;
 						plants(y)(x).with_sun <= '0';
-						plants(y)(x).cd <= "0000";
+						plants(y)(x).cd <= "1010";
 						plants(new_plant_y)(new_plant_x).hp <= "1010";
 						plants(new_plant_y)(new_plant_x).plant_type <= new_plant_type;
 					end if;
@@ -124,7 +124,7 @@ begin
 									p.cd := p.cd - 1;
 								end if;
 								plants(i)(j) <= p;
-							elsif (p.hp > 0 and p.plant_type = "01") then -- 向日葵产生阳光
+							elsif (p.hp > 0 and p.plant_type = "10") then -- 向日葵产生阳光
 								if (p.cd = 0) then
 									if (p.with_sun = '1') then
 										p.with_sun := '0';
@@ -157,7 +157,7 @@ begin
 					for i in 0 to N-1 loop
 						if (zombies(i).hp > 0) then
 							if (plants(i)(zombies(i).x-1).hp > 0) then
-								if (plants(i)(zombies(i).x-1).plant_type="10") then -- 坚果墙的防御力较高特殊处理
+								if (plants(i)(zombies(i).x-1).plant_type="01") then -- 坚果墙的防御力较高特殊处理
 									plants(i)(zombies(i).x-1).hp <= plants(i)(zombies(i).x-1).hp - NUT_HARM;
 								else
 									plants(i)(zombies(i).x-1).hp <= plants(i)(zombies(i).x-1).hp - NORM_HARM;

@@ -204,9 +204,9 @@ begin
 									if (state = PEASHOOTER_DOWN) then
 										address_obj <= '0' & "00000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
 									elsif (state = SUNFLOWER_DOWN) then
-										address_obj <= '0' & "01000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
-									elsif (state = WALLNUT_DOWN) then
 										address_obj <= '0' & "10000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
+									elsif (state = WALLNUT_DOWN) then
+										address_obj <= '0' & "01000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
 									end if;
 									alpha := conv_integer(q_obj(2 downto 0));
 									if (alpha > 1) then

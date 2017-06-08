@@ -83,18 +83,15 @@ begin
 					if (s1 = PEASHOOTER_DOWN) then
 						new_plant <= '1';
 						new_plant_type <= "00";
-					elsif (s1 = SUNFLOWER_DOWN) then
+					elsif (s1 = WALLNUT_DOWN) then
 						new_plant <= '1';
 						new_plant_type <= "01";
-					elsif (s1 = WALLNUT_DOWN) then
+					elsif (s1 = SUNFLOWER_DOWN) then
 						new_plant <= '1';
 						new_plant_type <= "10";
 					else
 						new_plant <= '0';
 					end if;
-				elsif (plants(py)(px).with_sun='1') then
-					new_plant <= '1';
-					new_plant_type <= "01";
 				end if;
 			else
 				new_plant <= '0';
