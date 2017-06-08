@@ -57,17 +57,7 @@ begin
 	begin
 		if (rising_edge(clock)) then
 
-			if (game_state=S_LOST) then
-				address_sram <= conv_std_logic_vector(conv_integer(x) * 480 + conv_integer(y), 20);
-				r <= q_sram(17 downto 15);
-				g <= q_sram(14 downto 12);
-				b <= q_sram(11 downto 9);
-			elsif (game_state=S_WIN) then
-				address_sram <= conv_std_logic_vector(conv_integer(x) * 480 + conv_integer(y), 20);
-				r <= q_sram(26 downto 24);
-				g <= q_sram(23 downto 21);
-				b <= q_sram(20 downto 18);
-			elsif (x < 10 and y < 10) then
+			if (x < 10 and y < 10) then
 				-- 鼠标状态提示
 				case state is
 				when NO =>
@@ -105,7 +95,7 @@ begin
 					r <= "000";
 					g <= "111";
 					b <= "000";
-				elsif game_state=S_START then
+				elsif game_state=S_PLAYING then
 					r <= "111";
 					g <= "111";
 					b <= "111";
@@ -119,7 +109,18 @@ begin
 				r <= "000";
 				g <= "000";
 				b <= "000";
+			elsif (game_state=S_LOST) then
+				address_sram <= conv_std_logic_vector(conv_integer(x) * 480 + conv_integer(y), 20);
+				r <= q_sram(17 downto 15);
+				g <= q_sram(14 downto 12);
+				b <= q_sram(11 downto 9);
+			elsif (game_state=S_WIN) then
+				address_sram <= conv_std_logic_vector(conv_integer(x) * 480 + conv_integer(y), 20);
+				r <= q_sram(26 downto 24);
+				g <= q_sram(23 downto 21);
+				b <= q_sram(20 downto 18);
 			else
+
 				address_sram <= conv_std_logic_vector(conv_integer(x) * 480 + conv_integer(y), 20);
 				bg_r <= conv_integer(q_sram(8 downto 6));
 				bg_g <= conv_integer(q_sram(5 downto 3));

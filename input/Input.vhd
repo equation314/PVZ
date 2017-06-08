@@ -9,6 +9,8 @@ use pvz.pvz_objects.all;
 entity Input is
 	port(
 		clock, reset: in std_logic;
+		click: out std_logic;
+		game_state: in game_state;
 		ps2_clk: inout std_logic;
 		ps2_data: inout std_logic;
 		mousex, mousey: out std_logic_vector(9 downto 0); -- 鼠标坐标输出
@@ -42,6 +44,7 @@ architecture bhv of Input is
 begin
 	mousex <= x;
 	mousey <= y;
+	click <= left_button;
 
 	mouse: ps2_mouse port map (
 		clk_in => clock,
@@ -70,7 +73,6 @@ begin
 				s1 <= NO;
 			end if;
 		elsif (falling_edge(left_button)) then
-
 			if (x < 9 * 64 and 18 * 4 <= y and y < 18 * 4 + 5 * 80) then
 				s2 <= UP;
 				px := conv_integer(x(9 downto 6));

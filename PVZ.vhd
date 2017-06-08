@@ -56,6 +56,7 @@ architecture bhv of PVZ is
 	component Input is
 		port(
 			clock, reset: in std_logic;
+			click: out std_logic;
 			ps2_clk: inout std_logic;
 			ps2_data: inout std_logic;
 			mousex, mousey: out std_logic_vector(9 downto 0);
@@ -112,16 +113,18 @@ architecture bhv of PVZ is
 	signal zombies: zombie_vector;
 	signal mousex, mousey: std_logic_vector(9 downto 0);
 	signal state: mouse_state;
+	signal click: std_logic;
 	signal new_plant: std_logic;
 	signal new_plant_type: std_logic_vector(1 downto 0);
 	signal new_plant_x, new_plant_y: integer range 0 to M-1;
 	signal win: std_logic := '0'; -- 赢
 	signal lost: std_logic := '0'; -- 输
-	signal restart: std_logic := '0'; -- 重置游戏
+	signal restart: std_logic := '1'; -- 重置游戏
 	signal rnd : std_logic_vector(3 downto 0);
 
-	signal current_state : game_state := S_START;
-	signal next_state : game_state := S_START;
+	signal current_state: game_state:= S_WIN;
+	signal fuck: std_logic := '0';
+	signal game_clk: std_logic;
 
 	constant WIN_CONDITION : std_logic_vector(3 downto 0) := "1000"; -- 需要过8轮才能赢
 
@@ -164,8 +167,9 @@ begin
 
 	-- input
 	i: Input port map (
-		clock => clk_0,
+		clock => clk50,
 		reset => reset,
+		click => click,
 		ps2_clk => ps2_clk,
 		ps2_data => ps2_data,
 		mousex => mousex, mousey => mousey,
@@ -178,7 +182,7 @@ begin
 
 	-- display
 	vga: VGA640x480 port map (
-		reset => reset,
+		reset => '1',
 		clk50 => clk50,
 		clk_0 => clk_0,
 		hs => hs, vs => vs,
@@ -203,44 +207,45 @@ begin
 		game_state => current_state
 	);
 
-	fsm: process(clk50)
-	begin
-		if (rising_edge(clk50)) then
-			if reset='0' then
-				current_state <= S_START;
-				--next_state <= S_START;
-			elsif rising_edge(clk50) then
-				current_state <= next_state;
-			end if;
-		end if;
-	end process;
-
-	com: process(current_state)
+	com: process(clk50, current_state, click)
 	begin
 		if (rising_edge(clk50)) then
 			case current_state is
-				when S_START =>
-					state_out <= "000";
-					restart <= '0';
-					next_state <= S_PLAYING;
-				when S_PLAYING =>
-					state_out <= "001";
-					if lost = '1' then
-						next_state <= S_LOST;
-					elsif rnd = WIN_CONDITION then
-						next_state <= S_WIN;
+				when S_WIN =>
+					if (click = '1' and fuck = '0') then
+						if (200 <= mousex and mousex < 440 and 435 <= mousey and mousey < 460) then
+							restart <= '1';
+							fuck <= '1';
+							current_state <= S_PLAYING;
+						end if;
 					else
-						next_state <= S_PLAYING;
-						restart <= '0';
+						fuck <= '0';
 					end if;
 				when S_LOST =>
-					state_out <= "010";
 					restart <= '1';
-					next_state <= S_LOST;
-				when S_WIN =>
-					state_out <= "100";
+					if (click = '1' and fuck = '0') then
+						fuck <= '1';
+						current_state <= S_WIN;
+					else
+						fuck <= '0';
+					end if;
+				when S_PLAYING =>
+					if (lost = '1') then
+						if (fuck = '0') then
+							current_state <= S_LOST;
+						end if;
+					elsif (rnd = WIN_CONDITION) then
+						if (fuck = '0') then
+							current_state <= S_WIN;
+						end if;
+					else
+						current_state <= S_PLAYING;
+						restart <= '0';
+						fuck <= '0';
+					end if;
+				when others =>
 					restart <= '1';
-					next_state <= S_WIN;
+					current_state <= S_WIN;
 			end case;
 		end if;
 	end process;

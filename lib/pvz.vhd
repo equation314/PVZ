@@ -26,6 +26,6 @@ package pvz_objects is
 
 	type mouse_state is (NO, SUNFLOWER_DOWN, PEASHOOTER_DOWN, WALLNUT_DOWN, UP);
 
-	type game_state is (S_START, S_PLAYING, S_LOST, S_WIN);
+	type game_state is (S_WIN, S_LOST, S_PLAYING);
 
 end package;
