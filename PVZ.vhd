@@ -102,8 +102,6 @@ architecture bhv of PVZ is
 	  );
 	end component;
 
-
-	signal game_clk: std_logic;
 	signal clk50, clk25: std_logic;
 	signal address_obj: std_logic_vector(15 downto 0);
 	signal address_ps: std_logic_vector(12 downto 0);
@@ -142,7 +140,7 @@ begin
 	-- logic
 	l: Logic port map (
 		reset => restart,
-		clock => game_clk,
+		clock => clk50,
 		out_plants => plants,
 		out_zombies => zombies,
 		new_plant => new_plant,
@@ -205,51 +203,46 @@ begin
 		game_state => current_state
 	);
 
-	gc: process(clk50, current_state)
-	begin
-		if (current_state=S_PLAYING) then
-			game_clk <= clk50;
-		else
-			game_clk <= '0';
-		end if;
-	end process;
-
 	fsm: process(clk50)
 	begin
-		if reset='0' then
-			current_state <= S_START;
-			--next_state <= S_START;
-		elsif rising_edge(clk50) then
-			current_state <= next_state;
+		if (rising_edge(clk50)) then
+			if reset='0' then
+				current_state <= S_START;
+				--next_state <= S_START;
+			elsif rising_edge(clk50) then
+				current_state <= next_state;
+			end if;
 		end if;
 	end process;
 
 	com: process(current_state)
 	begin
-		case current_state is
-			when S_START =>
-				state_out <= "000";
-				restart <= '0';
-				next_state <= S_PLAYING;
-			when S_PLAYING =>
-				state_out <= "001";
-				if lost = '1' then
-					next_state <= S_LOST;
-				elsif rnd = WIN_CONDITION then
-					next_state <= S_WIN;
-				else
-					next_state <= S_PLAYING;
+		if (rising_edge(clk50)) then
+			case current_state is
+				when S_START =>
+					state_out <= "000";
 					restart <= '0';
-				end if;
-			when S_LOST =>
-				state_out <= "010";
-				restart <= '1';
-				next_state <= S_LOST;
-			when S_WIN =>
-				state_out <= "100";
-				restart <= '1';
-				next_state <= S_WIN;
-		end case;
+					next_state <= S_PLAYING;
+				when S_PLAYING =>
+					state_out <= "001";
+					if lost = '1' then
+						next_state <= S_LOST;
+					elsif rnd = WIN_CONDITION then
+						next_state <= S_WIN;
+					else
+						next_state <= S_PLAYING;
+						restart <= '0';
+					end if;
+				when S_LOST =>
+					state_out <= "010";
+					restart <= '1';
+					next_state <= S_LOST;
+				when S_WIN =>
+					state_out <= "100";
+					restart <= '1';
+					next_state <= S_WIN;
+			end case;
+		end if;
 	end process;
 
 	process(rnd)
