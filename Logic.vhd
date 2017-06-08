@@ -93,7 +93,7 @@ begin
 							if (zombies(i).hp > 0 and zombies(i).x >= j) then
 								if (p.pea = zombies(i).x or p.pea = zombies(i).x-1) then
 									p.pea := M;
-									zombies(i).hp <= zombies(i).hp - 2;
+									zombies(i).hp <= zombies(i).hp - 1;
 								elsif (p.pea < M) then
 									p.pea := p.pea + 1;
 								elsif (p.cd = 0) then

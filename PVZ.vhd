@@ -182,7 +182,11 @@ begin
 
 	gc: process(clk50, current_state)
 	begin
-		game_clk <= clk50 and (current_state=S_PLAYING);
+		if (current_state=S_PLAYING) then
+			game_clk <= clk50;
+		else
+			game_clk <= '0';
+		end if;
 	end process;
 
 	fsm: process(clk50)

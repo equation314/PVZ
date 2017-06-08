@@ -90,6 +90,9 @@ begin
 					else
 						new_plant <= '0';
 					end if;
+				elsif (plants(py)(px).with_sun='1') then
+					new_plant <= '1';
+					new_plant_type <= "01";
 				end if;
 			else
 				new_plant <= '0';
