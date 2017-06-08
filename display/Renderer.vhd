@@ -128,14 +128,7 @@ begin
 				tmp_g <= bg_g;
 				tmp_b <= bg_b;
 
-				if (100 <= x and x < 300 and y < 70) then
-					-- 植物面板
-					address_obj <= conv_std_logic_vector(conv_integer(x - 100) * 70 + conv_integer(y), 16);
-					alpha := conv_integer(q_obj(2 downto 0));
-					r <= conv_std_logic_vector(((7 - alpha) * bg_r + alpha * conv_integer(q_obj(11 downto 9))) / 7, 3);
-					g <= conv_std_logic_vector(((7 - alpha) * bg_g + alpha * conv_integer(q_obj(8 downto 6))) / 7, 3);
-					b <= conv_std_logic_vector(((7 - alpha) * bg_b + alpha * conv_integer(q_obj(5 downto 3))) / 7, 3);
-				elsif (x < 640 and y < 480) then
+				if (x < 640 and y < 480) then
 
 					tmp_r1 <= 0;
 					tmp_g1 <= 0;
@@ -149,7 +142,7 @@ begin
 							x2 := x1 + 12 * 4;
 							y2 := y1 + 20 * 4;
 							if (x1 <= x and x < x2 and y1 <= y and y < y2) then
-								address_obj <= "01" & fps & conv_std_logic_vector(conv_integer(x - x1) / 2 * 40 + conv_integer(y - y1) / 2, 10);
+								address_obj <= "10" & fps & conv_std_logic_vector(conv_integer(x - x1) / 2 * 40 + conv_integer(y - y1) / 2, 10);
 								alpha := conv_integer(q_obj(2 downto 0));
 								tmp_r <= ((7 - alpha) * bg_r + alpha * conv_integer(q_obj(11 downto 9))) / 7;
 								tmp_g <= ((7 - alpha) * bg_g + alpha * conv_integer(q_obj(8 downto 6))) / 7;
@@ -170,7 +163,7 @@ begin
 							-- 已有的植物
 							if (p.hp > 0) then
 								if (x1 <= x and x < x2 and y1 <= y and y < y2) then
-									address_obj <= '1' & p.plant_type & fps(2 downto 0) & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
+									address_obj <= '0' & p.plant_type & fps(2 downto 0) & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
 									alpha := conv_integer(q_obj(2 downto 0));
 									tmp_r <= ((7 - alpha) * bg_r + alpha * conv_integer(q_obj(11 downto 9))) / 7;
 									tmp_g <= ((7 - alpha) * bg_g + alpha * conv_integer(q_obj(8 downto 6))) / 7;
@@ -208,11 +201,11 @@ begin
 								(state = PEASHOOTER_DOWN or state = SUNFLOWER_DOWN or state = WALLNUT_DOWN)) then
 								if (x1 <= x and x < x2 and y1 <= y and y < y2) then
 									if (state = PEASHOOTER_DOWN) then
-										address_obj <= '1' & "00000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
+										address_obj <= '0' & "00000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
 									elsif (state = SUNFLOWER_DOWN) then
-										address_obj <= '1' & "01000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
+										address_obj <= '0' & "01000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
 									elsif (state = WALLNUT_DOWN) then
-										address_obj <= '1' & "10000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
+										address_obj <= '0' & "10000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);
 									end if;
 									alpha := conv_integer(q_obj(2 downto 0));
 									if (alpha > 1) then
