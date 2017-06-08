@@ -184,16 +184,30 @@ begin
 
 								-- 豌豆
 								if (p.pea < M) then
-									x1 := p.pea * 16 * 4 + 12 * 4 + conv_integer(fps(1 downto 0)) * 16;
-									y1 := i * 20 * 4 + 20 * 4;
-									x2 := x1 + 4 * 4;
-									y2 := y1 + 4 * 4;
-									if (x1 <= x and x < x2 and y1 <= y and y < y2) then
-										address_ps <= "1" & conv_std_logic_vector(conv_integer(x - x1) * 16 + conv_integer(y - y1), 12);
-										alpha := conv_integer(q_ps(2 downto 0));
-										tmp_r1 <= ((7 - alpha) * tmp_r + alpha * conv_integer(q_ps(11 downto 9))) / 7;
-										tmp_g1 <= ((7 - alpha) * tmp_g + alpha * conv_integer(q_ps(8 downto 6))) / 7;
-										tmp_b1 <= ((7 - alpha) * tmp_b + alpha * conv_integer(q_ps(5 downto 3))) / 7;
+									if (zombies(i).x = p.pea) then
+										x1 := p.pea * 16 * 4 + 8 * 4;
+										y1 := i * 20 * 4 + 20 * 4;
+										x2 := x1 + 4 * 4;
+										y2 := y1 + 4 * 4;
+										if (x1 <= x and x < x2 and y1 <= y and y < y2) then
+											address_ps <= "10001" & conv_std_logic_vector(conv_integer(x - x1) * 16 + conv_integer(y - y1), 8);
+											alpha := conv_integer(q_ps(2 downto 0));
+											tmp_r1 <= ((7 - alpha) * tmp_r + alpha * conv_integer(q_ps(11 downto 9))) / 7;
+											tmp_g1 <= ((7 - alpha) * tmp_g + alpha * conv_integer(q_ps(8 downto 6))) / 7;
+											tmp_b1 <= ((7 - alpha) * tmp_b + alpha * conv_integer(q_ps(5 downto 3))) / 7;
+										end if;
+									else
+										x1 := p.pea * 16 * 4 + 12 * 4 + conv_integer(fps(1 downto 0)) * 16;
+										y1 := i * 20 * 4 + 20 * 4;
+										x2 := x1 + 4 * 4;
+										y2 := y1 + 4 * 4;
+										if (x1 <= x and x < x2 and y1 <= y and y < y2) then
+											address_ps <= "10000" & conv_std_logic_vector(conv_integer(x - x1) * 16 + conv_integer(y - y1), 8);
+											alpha := conv_integer(q_ps(2 downto 0));
+											tmp_r1 <= ((7 - alpha) * tmp_r + alpha * conv_integer(q_ps(11 downto 9))) / 7;
+											tmp_g1 <= ((7 - alpha) * tmp_g + alpha * conv_integer(q_ps(8 downto 6))) / 7;
+											tmp_b1 <= ((7 - alpha) * tmp_b + alpha * conv_integer(q_ps(5 downto 3))) / 7;
+										end if;
 									end if;
 								end if;
 
@@ -218,6 +232,7 @@ begin
 									tmp_g <= ((7 - alpha) * bg_g + alpha * conv_integer(q_obj(8 downto 6))) / 7;
 									tmp_b <= ((7 - alpha) * bg_b + alpha * conv_integer(q_obj(5 downto 3))) / 7;
 								end if;
+
 							end if;
 
 						end loop;
