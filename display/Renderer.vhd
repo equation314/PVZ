@@ -184,12 +184,12 @@ begin
 
 								-- 豌豆
 								if (p.pea < M) then
-									x1 := p.pea * 16 * 4;
-									y1 := i * 20 * 4 + 18 * 4;
-									x2 := x1 + 16 * 4;
-									y2 := y1 + 16 * 4;
-									if (x1 + 6 * 4 <= x and x < x2 - 6 * 4 and y1 + 2 * 4 <= y and y < y1 + 6 * 4) then
-										address_ps <= "1" & conv_std_logic_vector(conv_integer(x - x1 - 6 * 4) * 16 + conv_integer(y - y1 - 2 * 4), 12);
+									x1 := p.pea * 16 * 4 + 12 * 4 + conv_integer(fps(1 downto 0)) * 16;
+									y1 := i * 20 * 4 + 20 * 4;
+									x2 := x1 + 4 * 4;
+									y2 := y1 + 4 * 4;
+									if (x1 <= x and x < x2 and y1 <= y and y < y2) then
+										address_ps <= "1" & conv_std_logic_vector(conv_integer(x - x1) * 16 + conv_integer(y - y1), 12);
 										alpha := conv_integer(q_ps(2 downto 0));
 										tmp_r1 <= ((7 - alpha) * tmp_r + alpha * conv_integer(q_ps(11 downto 9))) / 7;
 										tmp_g1 <= ((7 - alpha) * tmp_g + alpha * conv_integer(q_ps(8 downto 6))) / 7;
@@ -199,7 +199,7 @@ begin
 
 							-- 将要放置的植物
 							elsif (x1 <= mousex and mousex < x2 and y1 <= mousey and mousey < y2 and
-								(state = PEASHOOTER_DOWN or state = SUNFLOWER_DOWN or state = WALLNUT_DOWN)) then
+								(state = PEASHOOTER_DOWN or state = SUNFLOWER_DOWN or state = WALLNUT_DOWN) and zombies(i).x /= j) then
 								if (x1 <= x and x < x2 and y1 <= y and y < y2) then
 									if (state = PEASHOOTER_DOWN) then
 										address_obj <= '0' & "00000" & conv_std_logic_vector(conv_integer(x - x1) / 2 * 32 + conv_integer(y - y1) / 2, 10);

@@ -33,7 +33,7 @@ architecture bhv of Logic is
 	signal restart : std_logic := '0';
 
 	constant ROUND_CLK : integer := 20;
-	constant ZOMBIE_MOVE_COUNT : integer := 2;
+	constant ZOMBIE_MOVE_COUNT : integer := 3;
 	constant NEW_ZOMBIE_Y : y_vector := (1, 3, 0, 4, 2, 3, 2, 0, 1, 4, 2, 4, 3, 1, 0, 1, 0, 3, 2, 4);
 
 begin
@@ -44,7 +44,7 @@ begin
 	begin
 		if (rising_edge(clock)) then
 			restart <= reset;
-			if (count = 30 * 1000000) then
+			if (count = 32 * 1000000) then
 				count <= (others => '0');
 				pea_clk <= '1';
 			else
@@ -86,7 +86,7 @@ begin
 						y := new_plant_y;
 						plants(y)(x).pea <= M;
 						plants(y)(x).with_sun <= '0';
-						plants(y)(x).cd <= "1010";
+						plants(y)(x).cd <= "0000";
 						plants(new_plant_y)(new_plant_x).hp <= "1010";
 						plants(new_plant_y)(new_plant_x).plant_type <= new_plant_type;
 					end if;
