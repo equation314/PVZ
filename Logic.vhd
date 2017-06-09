@@ -81,12 +81,14 @@ begin
 
 			else
 				if (new_plant = '1') then
-					if (not(zombies(new_plant_y).x = new_plant_x and zombies(new_plant_y).hp > 0)) then
-						x := new_plant_x;
-						y := new_plant_y;
-						plants(y)(x).pea <= M;
-						plants(y)(x).with_sun <= '0';
-						plants(y)(x).cd <= "0000";
+					if (plants(new_plant_y)(new_plant_x).hp > 0 and new_plant_type = "10") then
+						plants(new_plant_y)(new_plant_x).with_sun <= '0';
+						plants(new_plant_y)(new_plant_x).cd <= "0000";
+						plants(new_plant_y)(new_plant_x).plant_type <= "10";
+					elsif (not(zombies(new_plant_y).x = new_plant_x and zombies(new_plant_y).hp > 0)) then
+						plants(new_plant_y)(new_plant_x).pea <= M;
+						plants(new_plant_y)(new_plant_x).with_sun <= '0';
+						plants(new_plant_y)(new_plant_x).cd <= "0000";
 						plants(new_plant_y)(new_plant_x).hp <= "1010";
 						plants(new_plant_y)(new_plant_x).plant_type <= new_plant_type;
 					end if;
@@ -109,33 +111,31 @@ begin
 							if (p.hp > 0 and p.plant_type = "00") then
 								if (zombies(i).hp > 0 and zombies(i).x >= j) then
 									if (p.pea = zombies(i).x or p.pea = zombies(i).x-1) then
-										p.pea := M;
+										plants(i)(j).pea <= M;
 										zombies(i).hp <= zombies(i).hp - 1;
-									elsif (p.pea < M) then
-										p.pea := p.pea + 1;
+									elsif (plants(i)(j).pea < M) then
+										plants(i)(j).pea <= p.pea + 1;
 									elsif (p.cd = 0) then
-										p.pea := j;
-										p.cd := "1010";
+										plants(i)(j).pea <= j;
+										plants(i)(j).cd <= "1010";
 									end if;
 								elsif (p.pea < M) then
-									p.pea := p.pea + 1;
+									plants(i)(j).pea <= p.pea + 1;
 								end if;
 								if (p.cd > 0) then
-									p.cd := p.cd - 1;
+									plants(i)(j).cd <= p.cd - 1;
 								end if;
-								plants(i)(j) <= p;
 							elsif (p.hp > 0 and p.plant_type = "10") then -- 向日葵产生阳光
 								if (p.cd = 0) then
 									if (p.with_sun = '1') then
-										p.with_sun := '0';
+										plants(i)(j).with_sun <= '0';
 									elsif (p.with_sun = '0') then
-										p.with_sun := '1';
+										plants(i)(j).with_sun <= '1';
 									end if;
-									p.cd := "1010";
+									plants(i)(j).cd <= "1010";
 								else
-									p.cd := p.cd - 1;
+									plants(i)(j).cd <= p.cd - 1;
 								end if;
-								plants(i)(j) <= p;
 							end if;
 						end loop;
 					end loop;

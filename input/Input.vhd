@@ -79,7 +79,10 @@ begin
 				py := conv_integer(y - 72) / 80;
 				new_plant_x <= px;
 				new_plant_y <= py;
-				if (plants(py)(px).hp = 0) then
+				if (s1 = NO and plants(py)(px).plant_type = "10") then
+					new_plant <= '1';
+					new_plant_type <= "10";
+				elsif (plants(py)(px).hp = 0) then
 					if (s1 = PEASHOOTER_DOWN) then
 						new_plant <= '1';
 						new_plant_type <= "00";
