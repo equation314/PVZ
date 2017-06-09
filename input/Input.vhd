@@ -95,6 +95,8 @@ begin
 					else
 						new_plant <= '0';
 					end if;
+				else
+					new_plant <= '0';
 				end if;
 			else
 				new_plant <= '0';

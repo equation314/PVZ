@@ -88,8 +88,8 @@ begin
 					elsif (not(zombies(new_plant_y).x = new_plant_x and zombies(new_plant_y).hp > 0)) then
 						plants(new_plant_y)(new_plant_x).pea <= M;
 						plants(new_plant_y)(new_plant_x).with_sun <= '0';
-						plants(new_plant_y)(new_plant_x).cd <= "0000";
-						plants(new_plant_y)(new_plant_x).hp <= "1010";
+						plants(new_plant_y)(new_plant_x).cd <= "0100";
+						plants(new_plant_y)(new_plant_x).hp <= "1000";
 						plants(new_plant_y)(new_plant_x).plant_type <= new_plant_type;
 					end if;
 				end if;
